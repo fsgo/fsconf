@@ -11,8 +11,8 @@ import (
 )
 
 func Test_confImpl(t *testing.T) {
-	conf := New(&ConfEnv{
-		RootPath: "./testdata/",
+	conf := New(&Env{
+		ConfRootDir: "./testdata/",
 	})
 	var a interface{}
 	if err := conf.Parse("abc.json", &a); err == nil {

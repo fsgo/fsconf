@@ -11,12 +11,12 @@ import (
 )
 
 // Default 默认的实例
-var Default Conf
+var Default IConf
 
-var defaultEnv Env
+var defaultEnv IEnv
 
 // SetDefaultEnv 设置默认实例的环境信息
-func SetDefaultEnv(env Env) {
+func SetDefaultEnv(env IEnv) {
 	defaultEnv = env
 }
 
@@ -25,8 +25,8 @@ var defaultInitOnce sync.Once
 func lazyInitDefault() {
 	defaultInitOnce.Do(func() {
 		if defaultEnv == nil {
-			defaultEnv = &ConfEnv{
-				RootPath: "./conf/",
+			defaultEnv = &Env{
+				ConfRootDir: "./conf/",
 			}
 		}
 		Default = NewDefault(defaultEnv)

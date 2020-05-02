@@ -11,7 +11,7 @@ import (
 )
 
 func TestConfEnv_SetConfRootPath1(t *testing.T) {
-	env := &ConfEnv{}
+	env := &Env{}
 	want := "./testdata/"
 	env.SetConfRootPath(want)
 	got := env.ConfRootPath()
@@ -25,7 +25,7 @@ func TestConfEnv_SetConfRootPath2(t *testing.T) {
 			t.Errorf("want panic")
 		}
 	}()
-	env := &ConfEnv{}
+	env := &Env{}
 	want := "./testdata/"
 	env.SetConfRootPath(want)
 

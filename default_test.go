@@ -12,8 +12,8 @@ import (
 )
 
 func init() {
-	SetDefaultEnv(&ConfEnv{
-		RootPath: "./testdata/",
+	SetDefaultEnv(&Env{
+		ConfRootDir: "./testdata/",
 	})
 }
 

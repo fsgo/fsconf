@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 )
 
-// Conf 配置解析定义
-type Conf interface {
+// IConf 配置解析定义
+type IConf interface {
 
 	// 读取并解析配置文件
 	// confName 不包括 conf/ 目录的文件路径
@@ -36,7 +36,7 @@ type Conf interface {
 
 // New 创建一个新的配置解析实例
 // 返回的实例是没有注册任何解析能力的
-func New(env Env) Conf {
+func New(env IEnv) IConf {
 	return &confImpl{
 		env:     env,
 		parsers: map[string]ParserFn{},
@@ -45,7 +45,7 @@ func New(env Env) Conf {
 
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault(env Env) Conf {
+func NewDefault(env IEnv) IConf {
 	conf := New(env)
 	for name, fn := range defaultParsers {
 		if err := conf.RegisterParser(name, fn); err != nil {
@@ -62,7 +62,7 @@ func NewDefault(env Env) Conf {
 }
 
 type confImpl struct {
-	env     Env
+	env     IEnv
 	parsers map[string]ParserFn
 	helpers []*helper
 }
@@ -143,4 +143,4 @@ func (c *confImpl) RegisterHelper(name string, fn HelperFn) error {
 	return nil
 }
 
-var _ Conf = (*confImpl)(nil)
+var _ IConf = (*confImpl)(nil)
