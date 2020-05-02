@@ -22,7 +22,7 @@ RegisterParser(fileExt string, fn ParserFn) error
 RegisterHelper(name string, fn HelperFn) error
 ```
 
-```
+```go
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
 func NewDefault(env Env) Conf 
@@ -30,7 +30,7 @@ func NewDefault(env Env) Conf
 
 ## 3.使用示例
 
-```
+```go
 package main
 
 import (
