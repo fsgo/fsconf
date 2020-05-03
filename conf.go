@@ -11,10 +11,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/fsgo/fsenv"
 )
 
 // IConf 配置解析定义
 type IConf interface {
+	fsenv.IModuleEnv
 
 	// 读取并解析配置文件
 	// confName 不包括 conf/ 目录的文件路径
@@ -36,17 +39,18 @@ type IConf interface {
 
 // New 创建一个新的配置解析实例
 // 返回的实例是没有注册任何解析能力的
-func New(env IEnv) IConf {
-	return &confImpl{
-		env:     env,
-		parsers: map[string]ParserFn{},
+func New() IConf {
+	conf := &confImpl{
+		parsers:   map[string]ParserFn{},
+		ModuleEnv: &fsenv.ModuleEnv{},
 	}
+	return conf
 }
 
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault(env IEnv) IConf {
-	conf := New(env)
+func NewDefault() IConf {
+	conf := New()
 	for name, fn := range defaultParsers {
 		if err := conf.RegisterParser(name, fn); err != nil {
 			panic(fmt.Sprintf("RegisterParser(%q) err=%s", name, err))
@@ -62,7 +66,7 @@ func NewDefault(env IEnv) IConf {
 }
 
 type confImpl struct {
-	env     IEnv
+	*fsenv.ModuleEnv
 	parsers map[string]ParserFn
 	helpers []*helper
 }
@@ -73,7 +77,7 @@ func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
 }
 
 func (c *confImpl) confFileAbsPath(confName string) string {
-	return filepath.Join(c.env.ConfRootPath(), confName)
+	return filepath.Join(c.Env().ConfRootPath(), confName)
 }
 
 func (c *confImpl) ParseByAbsPath(confAbsPath string, obj interface{}) (err error) {

@@ -8,12 +8,16 @@ package fsconf
 
 import (
 	"testing"
+
+	"github.com/fsgo/fsenv"
 )
 
 func Test_confImpl(t *testing.T) {
-	conf := New(&Env{
-		ConfRootDir: "./testdata/",
+	conf := New()
+	env := fsenv.NewAppEnv(&fsenv.Value{
+		RootDir: "./testdata",
 	})
+	conf.SetEnvOnce(env)
 	var a interface{}
 	if err := conf.Parse("abc.json", &a); err == nil {
 		t.Errorf("expect has error")

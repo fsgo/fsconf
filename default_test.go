@@ -9,12 +9,13 @@ package fsconf
 import (
 	"reflect"
 	"testing"
+
+	"github.com/fsgo/fsenv"
 )
 
 func init() {
-	SetDefaultEnv(&Env{
-		ConfRootDir: "./testdata/",
-	})
+	env := fsenv.NewAppEnv(&fsenv.Value{RootDir: "./testdata"})
+	Default.SetEnvOnce(env)
 }
 
 func TestExists(t *testing.T) {
@@ -122,7 +123,7 @@ func TestParseByAbsPath(t *testing.T) {
 		{
 			name: "case 1",
 			args: args{
-				confAbsPath: "testdata/abc.json",
+				confAbsPath: "testdata/conf/abc.json",
 				obj:         map[string]string{},
 			},
 			wantErr: false,
