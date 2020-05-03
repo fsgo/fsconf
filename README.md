@@ -25,7 +25,7 @@ RegisterHelper(name string, fn HelperFn) error
 ```go
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault(env IEnv) IConf 
+func NewDefault() IConf 
 ```
 
 ## 3.使用示例
@@ -68,4 +68,15 @@ func main() {
 port = "{osenv.server_port|8080}"
 
 port2 = "{osenv.server_port2}"
+```
+
+### 4.2 设置配置读取路径
+考虑到不同子模块读取配置的目录可能不同，允许让模块自己设置读取配置文件的根目录。
+```go
+conf:=fsconf.NewDefault()
+env:=fsenv.NewAppEnv(&fsenv.Value{RootDir:"./testdata/"})
+conf.SetEnvOnce(env)
+// your code
+var confData map[string]string
+conf.Parse("abc.json",&confData)
 ```
