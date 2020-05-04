@@ -10,6 +10,9 @@ import (
 	"testing"
 
 	"github.com/fsgo/fsenv"
+
+	"github.com/fsgo/fsconf/internal/helper"
+	"github.com/fsgo/fsconf/internal/parser"
 )
 
 func Test_confImpl(t *testing.T) {
@@ -23,9 +26,23 @@ func Test_confImpl(t *testing.T) {
 		t.Errorf("expect has error")
 	}
 
-	conf.RegisterParser(FileExtJSON, JSONParser)
+	conf.RegisterParser(parser.FileJSON, parser.JSON)
 
 	if err := conf.Parse("abc.xyz", &a); err == nil {
 		t.Errorf("expect has error 2")
 	}
+}
+
+func TestNewDefault1(t *testing.T) {
+	hd := append([]*helper.Helper{}, helper.Defaults...)
+	defer func() {
+		helper.Defaults = hd
+		if re := recover(); re == nil {
+			t.Errorf("want panic")
+		}
+	}()
+	h := helper.New("test", helper.OsEnvVars)
+	// helper 有重复的时候
+	helper.Defaults = append(helper.Defaults, h, h)
+	NewDefault()
 }

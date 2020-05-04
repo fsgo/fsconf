@@ -1,10 +1,10 @@
 /*
  * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
  * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/2
+ * Date: 2020/5/4
  */
 
-package fsconf
+package helper
 
 import (
 	"os"
@@ -36,7 +36,7 @@ func Test_helperOsEnvVars(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := helperOsEnvVars(tt.args.content)
+			got, err := OsEnvVars(tt.args.content)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("helperOsEnvVars() error = %v, wantErr %v", err, tt.wantErr)
 				return

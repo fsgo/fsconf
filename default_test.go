@@ -11,6 +11,9 @@ import (
 	"testing"
 
 	"github.com/fsgo/fsenv"
+
+	"github.com/fsgo/fsconf/internal/helper"
+	"github.com/fsgo/fsconf/internal/parser"
 )
 
 func init() {
@@ -148,7 +151,7 @@ func TestParseByAbsPath(t *testing.T) {
 func TestRegisterHelper(t *testing.T) {
 	type args struct {
 		name string
-		fn   HelperFn
+		fn   helper.Fn
 	}
 	tests := []struct {
 		name    string
@@ -159,7 +162,7 @@ func TestRegisterHelper(t *testing.T) {
 			name: "case 1",
 			args: args{
 				name: "",
-				fn:   helperOsEnvVars,
+				fn:   helper.OsEnvVars,
 			},
 			wantErr: true,
 		},
@@ -167,7 +170,7 @@ func TestRegisterHelper(t *testing.T) {
 			name: "case 2",
 			args: args{
 				name: "test_helper",
-				fn:   helperOsEnvVars,
+				fn:   helper.OsEnvVars,
 			},
 			wantErr: false,
 		},
@@ -175,14 +178,15 @@ func TestRegisterHelper(t *testing.T) {
 			name: "case 3- name is same as case 2",
 			args: args{
 				name: "test_helper",
-				fn:   helperOsEnvVars,
+				fn:   helper.OsEnvVars,
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := RegisterHelper(tt.args.name, tt.args.fn); (err != nil) != tt.wantErr {
+			h := helper.New(tt.args.name, tt.args.fn)
+			if err := RegisterHelper(h); (err != nil) != tt.wantErr {
 				t.Errorf("RegisterHelper() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -203,7 +207,7 @@ func TestRegisterParser(t *testing.T) {
 			name: "case 1",
 			args: args{
 				fileExt: ".json",
-				fn:      JSONParser,
+				fn:      parser.JSON,
 			},
 			wantErr: true,
 		},
@@ -211,7 +215,7 @@ func TestRegisterParser(t *testing.T) {
 			name: "case 2",
 			args: args{
 				fileExt: ".myjson",
-				fn:      JSONParser,
+				fn:      parser.JSON,
 			},
 			wantErr: false,
 		},

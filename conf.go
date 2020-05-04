@@ -13,7 +13,17 @@ import (
 	"path/filepath"
 
 	"github.com/fsgo/fsenv"
+
+	"github.com/fsgo/fsconf/internal/helper"
+	"github.com/fsgo/fsconf/internal/parser"
 )
+
+// ParserFn 针对特定文件后缀的配置解析方法
+// 当前已经内置了 .toml  和 .json的解析方法
+type ParserFn = parser.Fn
+
+// Helper 辅助方法，在执行解析前，会先会配置的内容进行解析处理
+type Helper = helper.Helper
 
 // IConf 配置解析定义
 type IConf interface {
@@ -34,7 +44,7 @@ type IConf interface {
 	RegisterParser(fileExt string, fn ParserFn) error
 
 	// 注册一个辅助方法
-	RegisterHelper(name string, fn HelperFn) error
+	RegisterHelper(h *Helper) error
 }
 
 // New 创建一个新的配置解析实例
@@ -51,15 +61,15 @@ func New() IConf {
 // 会注册默认的配置解析方法和辅助方法
 func NewDefault() IConf {
 	conf := New()
-	for name, fn := range defaultParsers {
+	for name, fn := range parser.Defaults {
 		if err := conf.RegisterParser(name, fn); err != nil {
 			panic(fmt.Sprintf("RegisterParser(%q) err=%s", name, err))
 		}
 	}
 
-	for name, fn := range defaultHelpers {
-		if err := conf.RegisterHelper(name, fn); err != nil {
-			panic(fmt.Sprintf("RegisterHelper(%q) err=%s", name, err))
+	for _, h := range helper.Defaults {
+		if err := conf.RegisterHelper(h); err != nil {
+			panic(fmt.Sprintf("RegisterHelper(%q) err=%s", h.Name, err))
 		}
 	}
 	return conf
@@ -68,7 +78,7 @@ func NewDefault() IConf {
 type confImpl struct {
 	*fsenv.ModuleEnv
 	parsers map[string]ParserFn
-	helpers []*helper
+	helpers []*helper.Helper
 }
 
 func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
@@ -101,10 +111,10 @@ func (c *confImpl) readConfDirect(confPath string, obj interface{}) error {
 		return errIO
 	}
 
-	contentNew, errUser := executeHelpers(content, c.helpers)
+	contentNew, errHelper := helper.Execute(content, c.helpers)
 
-	if errUser != nil {
-		return errUser
+	if errHelper != nil {
+		return errHelper
 	}
 
 	if errParser := parserFn(contentNew, obj); errParser != nil {
@@ -129,21 +139,17 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 	return nil
 }
 
-func (c *confImpl) RegisterHelper(name string, fn HelperFn) error {
-	if name == "" {
+func (c *confImpl) RegisterHelper(h *Helper) error {
+	if h.Name == "" {
 		return fmt.Errorf("name ='', not allow")
 	}
 
-	for _, helper := range c.helpers {
-		if helper.name == name {
-			return fmt.Errorf("helper=%q already exists", name)
+	for _, h1 := range c.helpers {
+		if h.Name == h1.Name {
+			return fmt.Errorf("helper=%q already exists", h.Name)
 		}
 	}
-	helper := &helper{
-		name: name,
-		fn:   fn,
-	}
-	c.helpers = append(c.helpers, helper)
+	c.helpers = append(c.helpers, h)
 	return nil
 }
 

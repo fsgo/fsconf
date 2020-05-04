@@ -31,6 +31,6 @@ func RegisterParser(fileExt string, fn ParserFn) error {
 }
 
 // RegisterHelper 注册一个辅助方法
-func RegisterHelper(name string, fn HelperFn) error {
-	return Default.RegisterHelper(name, fn)
+func RegisterHelper(h *Helper) error {
+	return Default.RegisterHelper(h)
 }
