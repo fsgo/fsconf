@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	env := fsenv.NewAppEnv(&fsenv.Value{RootDir: "./testdata"})
+	env := fsenv.NewAppEnv(fsenv.Value{RootDir: "./testdata"})
 	Default.SetEnvOnce(env)
 }
 

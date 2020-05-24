@@ -87,7 +87,7 @@ func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
 }
 
 func (c *confImpl) confFileAbsPath(confName string) string {
-	return filepath.Join(c.Env().ConfRootPath(), confName)
+	return filepath.Join(c.Env().ConfRootDir(), confName)
 }
 
 func (c *confImpl) ParseByAbsPath(confAbsPath string, obj interface{}) (err error) {

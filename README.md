@@ -1,8 +1,14 @@
 # fsconf
 ## 1.功能概述
-基于json、toml的，一个简单的配置读取库。
+一个可扩展的、简单的配置读取库，目前支持`.json`、`.toml`文件的配置。  
 
-## 2.对外接口：
+
+[![Build Status](https://travis-ci.org/fsgo/fsconf.png?branch=master)](https://travis-ci.org/fsgo/fsconf)
+[![GoCover](https://gocover.io/_badge/github.com/fsgo/fsconf)](https://gocover.io/github.com/fsgo/fsconf)
+[![GoDoc](https://godoc.org/github.com/fsgo/fsconf?status.svg)](https://godoc.org/github.com/fsgo/fsconf)
+
+
+## 2.对外接口
 ```go
 // 读取并解析配置文件
 // confName 不包括 conf/ 目录的文件路径
@@ -63,18 +69,24 @@ func main() {
 
 ###  4.1 从系统环境变量读取变量
 配置内容：
-```
+```toml
 # 若环境变量里有 server_port，而且不为空，则使用环境变量的值，否则使用默认值8080
 port = "{osenv.server_port|8080}"
 
 port2 = "{osenv.server_port2}"
 ```
+这样就可以在运行前通过设置环境变量来影响配置文件：
+```
+export  server_port=80
+go run main.go
+```
+
 
 ### 4.2 设置配置读取路径
 考虑到不同子模块读取配置的目录可能不同，允许让模块自己设置读取配置文件的根目录。
 ```go
 conf:=fsconf.NewDefault()
-env:=fsenv.NewAppEnv(&fsenv.Value{RootDir:"./testdata/"})
+env:=fsenv.NewAppEnv(fsenv.Value{RootDir:"./testdata/"})
 conf.SetEnvOnce(env)
 // your code
 var confData map[string]string

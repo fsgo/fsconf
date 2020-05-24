@@ -1,4 +1,4 @@
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/fsgo/fsenv v0.0.0-20200503055639-549a3405e4d3 h1:qLj5+i3lcwAxgT7KuwNjeuAAg85Y2se/xfAt41xvbcw=
-github.com/fsgo/fsenv v0.0.0-20200503055639-549a3405e4d3/go.mod h1:VJdQ6Ak+xgscp5IHcTAHRb3nO916wnKv5URkupFw6KE=
+github.com/fsgo/fsenv v0.0.0-20200524080523-81df56f5a7a1 h1:5l24Uj4IVy2K78RiVZOe1dssq0219jVFZNTw2xVlu/Y=
+github.com/fsgo/fsenv v0.0.0-20200524080523-81df56f5a7a1/go.mod h1:VJdQ6Ak+xgscp5IHcTAHRb3nO916wnKv5URkupFw6KE=

@@ -17,7 +17,7 @@ import (
 
 func Test_confImpl(t *testing.T) {
 	conf := New()
-	env := fsenv.NewAppEnv(&fsenv.Value{
+	env := fsenv.NewAppEnv(fsenv.Value{
 		RootDir: "./testdata",
 	})
 	conf.SetEnvOnce(env)
