@@ -12,10 +12,14 @@
 ```go
 // 读取并解析配置文件
 // confName 不包括 conf/ 目录的文件路径
-Parse(confName string, obj interface{}) (err error)
+Parse(confName string, obj interface{})error
 
 // 使用绝对/相对 读取并解析配置文件
-ParseByAbsPath(confAbsPath string, obj interface{}) (err error)
+ParseByAbsPath(confAbsPath string, obj interface{})  error
+
+// ParseBytes 解析bytes
+// fileExt 是文件后缀，如.json、.toml
+func ParseBytes(fileExt string,content []byte,obj interface{})error
 
 // 配置文件是否存在
 Exists(confName string) bool
@@ -91,4 +95,14 @@ conf.SetEnvOnce(env)
 // your code
 var confData map[string]string
 conf.Parse("abc.json",&confData)
+```
+
+### 4.3 .json格式配置
+配置注释：每行以`#`开头的是注释，在解析时会忽略掉，如：
+```javascript
+{
+    "ID": 1
+#这是注释
+   # 这也是注释
+}
 ```

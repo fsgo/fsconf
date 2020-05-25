@@ -31,10 +31,13 @@ type IConf interface {
 
 	// 读取并解析配置文件
 	// confName 不包括 conf/ 目录的文件路径
-	Parse(confName string, obj interface{}) (err error)
+	Parse(confName string, obj interface{}) error
 
 	// 使用绝对/相对 读取并解析配置文件
-	ParseByAbsPath(confAbsPath string, obj interface{}) (err error)
+	ParseByAbsPath(confAbsPath string, obj interface{}) error
+
+	// 解析bytes内容
+	ParseBytes(fileExt string, content []byte, obj interface{}) error
 
 	// 配置文件是否存在
 	Exists(confName string) bool
@@ -99,16 +102,18 @@ func (c *confImpl) ParseByAbsPath(confAbsPath string, obj interface{}) (err erro
 }
 
 func (c *confImpl) readConfDirect(confPath string, obj interface{}) error {
-	fileExt := filepath.Ext(confPath)
-
-	parserFn, hasParser := c.parsers[fileExt]
-	if fileExt == "" || !hasParser {
-		return fmt.Errorf("fileType '%s' is not yet supported", fileExt)
-	}
-
 	content, errIO := ioutil.ReadFile(confPath)
 	if errIO != nil {
 		return errIO
+	}
+	fileExt := filepath.Ext(confPath)
+	return c.ParseBytes(fileExt, content, obj)
+}
+
+func (c *confImpl) ParseBytes(fileExt string, content []byte, obj interface{}) error {
+	parserFn, hasParser := c.parsers[fileExt]
+	if fileExt == "" || !hasParser {
+		return fmt.Errorf("fileExt %q is not supported yet", fileExt)
 	}
 
 	contentNew, errHelper := helper.Execute(content, c.helpers)
@@ -141,7 +146,7 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 
 func (c *confImpl) RegisterHelper(h *Helper) error {
 	if h.Name == "" {
-		return fmt.Errorf("name ='', not allow")
+		return fmt.Errorf("helper.Name is empty, not allow")
 	}
 
 	for _, h1 := range c.helpers {

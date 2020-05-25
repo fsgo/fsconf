@@ -20,12 +20,19 @@ func ParseByAbsPath(confAbsPath string, obj interface{}) (err error) {
 	return Default.ParseByAbsPath(confAbsPath, obj)
 }
 
+// ParseBytes 解析bytes
+// fileExt 是文件后缀，如.json、.toml
+func ParseBytes(fileExt string, content []byte, obj interface{}) error {
+	return Default.ParseBytes(fileExt, content, obj)
+}
+
 // Exists  判断是否存在
 func Exists(confName string) bool {
 	return Default.Exists(confName)
 }
 
 // RegisterParser 注册一个解析器
+// fileExt 是文件后缀，如 .json
 func RegisterParser(fileExt string, fn ParserFn) error {
 	return Default.RegisterParser(fileExt, fn)
 }
