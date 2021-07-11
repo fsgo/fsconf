@@ -19,13 +19,15 @@ func Test_confImpl(t *testing.T) {
 	env := fsenv.NewAppEnv(fsenv.Value{
 		RootDir: "./testdata",
 	})
-	conf.SetEnvOnce(env)
+	conf.(fsenv.CanSetAppEnv).SetAppEnv(env)
 	var a interface{}
 	if err := conf.Parse("abc.json", &a); err == nil {
 		t.Errorf("expect has error")
 	}
 
-	conf.RegisterParser(parser.FileJSON, parser.JSON)
+	if err := conf.RegisterParser(parser.FileJSON, parser.JSON); err != nil {
+		t.Fatalf("RegisterParser got error %v", err)
+	}
 
 	if err := conf.Parse("abc.xyz", &a); err == nil {
 		t.Errorf("expect has error 2")
@@ -33,16 +35,16 @@ func Test_confImpl(t *testing.T) {
 }
 
 func TestNewDefault1(t *testing.T) {
-	hd := append([]*helper.Helper{}, helper.Defaults...)
+	hd := append([]Helper{}, defaultHelpers...)
 	defer func() {
-		helper.Defaults = hd
+		defaultHelpers = hd
 		if re := recover(); re == nil {
 			t.Errorf("want panic")
 		}
 	}()
-	h := helper.New("test", helper.OsEnvVars)
+	h := newHelper("test", helper.OsEnvVars)
 	// helper 有重复的时候
-	helper.Defaults = append(helper.Defaults, h, h)
+	defaultHelpers = append(defaultHelpers, h, h)
 	NewDefault()
 }
 

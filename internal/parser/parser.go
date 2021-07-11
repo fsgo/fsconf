@@ -35,15 +35,3 @@ func StripComment(input []byte) (out []byte) {
 	}
 	return bytes.TrimSpace(buf.Bytes())
 }
-
-// Defaults 所有默认的parser
-var Defaults = map[string]Fn{
-	FileJSON: JSON,
-	FileTOML: TOML,
-}
-
-// GetDefault 获取指定默认的parser
-func GetDefault(ext string) Fn {
-	fn, _ := Defaults[ext]
-	return fn
-}

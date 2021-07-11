@@ -16,7 +16,7 @@ import (
 
 func init() {
 	env := fsenv.NewAppEnv(fsenv.Value{RootDir: "./testdata"})
-	Default.SetEnvOnce(env)
+	Default.(fsenv.CanSetAppEnv).SetAppEnv(env)
 }
 
 func TestExists(t *testing.T) {
@@ -183,7 +183,7 @@ func TestRegisterHelper(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := helper.New(tt.args.name, tt.args.fn)
+			h := newHelper(tt.args.name, tt.args.fn)
 			if err := RegisterHelper(h); (err != nil) != tt.wantErr {
 				t.Errorf("RegisterHelper() error = %v, wantErr %v", err, tt.wantErr)
 			}

@@ -5,7 +5,6 @@
 package parser
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -41,52 +40,6 @@ line6 #666`),
 		t.Run(tt.name, func(t *testing.T) {
 			if gotOut := StripComment(tt.args.input); !reflect.DeepEqual(gotOut, tt.wantOut) {
 				t.Errorf("StripComment() = %q, want %q", gotOut, tt.wantOut)
-			}
-		})
-	}
-}
-
-func TestGetDefault(t *testing.T) {
-	type args struct {
-		ext string
-	}
-	tests := []struct {
-		name string
-		args args
-		want Fn
-	}{
-		{
-			name: "case 1",
-			args: args{
-				ext: FileJSON,
-			},
-			want: JSON,
-		},
-		{
-			name: "case 2",
-			args: args{
-				ext: ".other_not_found",
-			},
-			want: nil,
-		},
-		{
-			name: "case 3",
-			args: args{
-				ext: FileTOML,
-			},
-			want: TOML,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetDefault(tt.args.ext)
-			if got == nil && tt.want == nil {
-				return
-			}
-			gotName := fmt.Sprint(got)
-			wantName := fmt.Sprint(tt.want)
-			if gotName != wantName {
-				t.Errorf("GetDefault() = %v, want %v", gotName, wantName)
 			}
 		})
 	}

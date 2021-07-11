@@ -91,7 +91,7 @@ go run main.go
 ```go
 conf:=fsconf.NewDefault()
 env:=fsenv.NewAppEnv(fsenv.Value{RootDir:"./testdata/"})
-conf.SetEnvOnce(env)
+conf.SetEnv(env)
 // your code
 var confData map[string]string
 conf.Parse("abc.json",&confData)

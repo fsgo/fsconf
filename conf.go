@@ -5,81 +5,74 @@
 package fsconf
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/fsgo/fsenv"
-
-	"github.com/fsgo/fsconf/internal/helper"
-	"github.com/fsgo/fsconf/internal/parser"
 )
 
-// ParserFn 针对特定文件后缀的配置解析方法
-// 当前已经内置了 .toml  和 .json的解析方法
-type ParserFn = parser.Fn
-
-// Helper 辅助方法，在执行解析前，会先会配置的内容进行解析处理
-type Helper = helper.Helper
-
-// IConf 配置解析定义
-type IConf interface {
-	fsenv.IModuleEnv
-
-	// 读取并解析配置文件
+// Configure 配置解析定义
+type Configure interface {
+	// Parse 读取并解析配置文件
 	// confName 不包括 conf/ 目录的文件路径
 	Parse(confName string, obj interface{}) error
 
-	// 使用绝对/相对 读取并解析配置文件
+	// ParseByAbsPath 使用绝对/相对 读取并解析配置文件
 	ParseByAbsPath(confAbsPath string, obj interface{}) error
 
-	// 解析bytes内容
+	// ParseBytes 解析bytes内容
 	ParseBytes(fileExt string, content []byte, obj interface{}) error
 
-	// 配置文件是否存在
+	// Exists 配置文件是否存在
 	Exists(confName string) bool
 
-	// 注册一个指定后缀的配置的parser
+	// RegisterParser 注册一个指定后缀的配置的 parser
 	// 如要添加 .ini 文件的支持，可在此注册对应的解析函数即可
 	RegisterParser(fileExt string, fn ParserFn) error
 
-	// 注册一个辅助方法
-	RegisterHelper(h *Helper) error
+	// RegisterHelper 注册一个辅助方法
+	RegisterHelper(h Helper) error
+
+	// WithContext 设置一个 context，并返回新的对象
+	WithContext(ctx context.Context) Configure
 }
 
 // New 创建一个新的配置解析实例
 // 返回的实例是没有注册任何解析能力的
-func New() IConf {
+func New() Configure {
 	conf := &confImpl{
-		parsers:   map[string]ParserFn{},
-		ModuleEnv: &fsenv.ModuleEnv{},
+		parsers: map[string]ParserFn{},
 	}
 	return conf
 }
 
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault() IConf {
+func NewDefault() Configure {
 	conf := New()
-	for name, fn := range parser.Defaults {
+	for name, fn := range defaultParsers {
 		if err := conf.RegisterParser(name, fn); err != nil {
 			panic(fmt.Sprintf("RegisterParser(%q) err=%s", name, err))
 		}
 	}
 
-	for _, h := range helper.Defaults {
+	for _, h := range defaultHelpers {
 		if err := conf.RegisterHelper(h); err != nil {
-			panic(fmt.Sprintf("RegisterHelper(%q) err=%s", h.Name, err))
+			panic(fmt.Sprintf("RegisterHelper(%q) err=%s", h.Name(), err))
 		}
 	}
 	return conf
 }
 
 type confImpl struct {
-	*fsenv.ModuleEnv
+	fsenv.WithAppEnv
 	parsers map[string]ParserFn
-	helpers []*helper.Helper
+	helpers helpers
+	ctx     context.Context
 }
 
 func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
@@ -88,7 +81,10 @@ func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
 }
 
 func (c *confImpl) confFileAbsPath(confName string) string {
-	return filepath.Join(c.Env().ConfRootDir(), confName)
+	if strings.HasPrefix(confName, "./") {
+		return confName
+	}
+	return filepath.Join(c.AppEnv().ConfRootDir(), confName)
 }
 
 func (c *confImpl) ParseByAbsPath(confAbsPath string, obj interface{}) (err error) {
@@ -108,13 +104,20 @@ func (c *confImpl) readConfDirect(confPath string, obj interface{}) error {
 	return c.ParseBytes(fileExt, content, obj)
 }
 
+func (c *confImpl) context() context.Context {
+	if c.ctx == nil {
+		return context.Background()
+	}
+	return c.ctx
+}
+
 func (c *confImpl) ParseBytes(fileExt string, content []byte, obj interface{}) error {
 	parserFn, hasParser := c.parsers[fileExt]
 	if fileExt == "" || !hasParser {
 		return fmt.Errorf("fileExt %q is not supported yet", fileExt)
 	}
 
-	contentNew, errHelper := helper.Execute(content, c.helpers)
+	contentNew, errHelper := c.helpers.Execute(c.context(), c, content)
 
 	if errHelper != nil {
 		return errHelper
@@ -142,18 +145,29 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 	return nil
 }
 
-func (c *confImpl) RegisterHelper(h *Helper) error {
-	if h.Name == "" {
-		return fmt.Errorf("helper.Name is empty, not allow")
-	}
-
-	for _, h1 := range c.helpers {
-		if h.Name == h1.Name {
-			return fmt.Errorf("helper=%q already exists", h.Name)
-		}
-	}
-	c.helpers = append(c.helpers, h)
-	return nil
+func (c *confImpl) RegisterHelper(h Helper) error {
+	return c.helpers.Add(h)
 }
 
-var _ IConf = (*confImpl)(nil)
+func (c *confImpl) clone() *confImpl {
+	c1 := &confImpl{
+		parsers: make(map[string]ParserFn, len(c.parsers)),
+	}
+	for n, fn := range c.parsers {
+		c1.parsers[n] = fn
+	}
+	c1.helpers = append([]Helper{}, c.helpers...)
+
+	if env := c.AppEnv(); env != fsenv.Default {
+		c1.SetAppEnv(env)
+	}
+	return c1
+}
+
+func (c *confImpl) WithContext(ctx context.Context) Configure {
+	c1 := c.clone()
+	c1.ctx = ctx
+	return c1
+}
+
+var _ Configure = (*confImpl)(nil)
