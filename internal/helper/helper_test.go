@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/4
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu
+// Date: 2020/5/4
 
 package helper
 
@@ -65,11 +63,11 @@ func TestExecute(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			gotOutput, err := Execute(tt.args.input, tt.args.helpers)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("WithFunc() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(gotOutput, tt.wantOutput) {
-				t.Errorf("Execute() gotOutput = %v, want %v", gotOutput, tt.wantOutput)
+				t.Errorf("WithFunc() gotOutput = %v, want %v", gotOutput, tt.wantOutput)
 			}
 		})
 	}
