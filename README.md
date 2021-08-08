@@ -1,6 +1,6 @@
 # fsconf
 ## 1.功能概述
-一个可扩展的、简单的配置读取库，目前支持`.json`、`.toml`文件的配置。  
+一个可扩展的、简单的配置读取库，目前支持`.json`、`.toml`、`.xml`、`.yml`文件的配置。  
 
 
 [![Build Status](https://travis-ci.org/fsgo/fsconf.png?branch=master)](https://travis-ci.org/fsgo/fsconf)
