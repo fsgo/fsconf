@@ -2,7 +2,7 @@
 // Author: hidu
 // Date: 2020/5/4
 
-package helper
+package hook
 
 import (
 	"os"
@@ -34,7 +34,7 @@ func Test_helperOsEnvVars(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := OsEnvVars(tt.args.content)
+			got, err := OsEnvVars("", tt.args.content)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("helperOsEnvVars() error = %v, wantErr %v", err, tt.wantErr)
 				return

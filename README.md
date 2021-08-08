@@ -11,7 +11,8 @@
 ## 2.对外接口
 ```go
 // 读取并解析配置文件
-// confName 不包括 conf/ 目录的文件路径
+// confName ：相对于 conf/ 目录的文件路径
+// 也支持使用绝对路径
 Parse(confName string, obj interface{})error
 
 // 使用绝对/相对 读取并解析配置文件
@@ -19,7 +20,7 @@ ParseByAbsPath(confAbsPath string, obj interface{})  error
 
 // ParseBytes 解析bytes
 // fileExt 是文件后缀，如.json、.toml
-func ParseBytes(fileExt string,content []byte,obj interface{})error
+ParseBytes(fileExt string,content []byte,obj interface{})error
 
 // 配置文件是否存在
 Exists(confName string) bool
@@ -28,14 +29,14 @@ Exists(confName string) bool
 // 如要添加 .ini 文件的支持，可在此注册对应的解析函数即可
 RegisterParser(fileExt string, fn ParserFn) error
 
-// 注册一个辅助方法
-RegisterHelper(name string, fn HelperFn) error
+// 注册一个 Hook
+RegisterHook(h Helper) error
 ```
 
 ```go
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault() IConf 
+func NewDefault() Configure 
 ```
 
 ## 3.使用示例
@@ -71,7 +72,7 @@ func main() {
 
 ## 4.特性说明
 
-###  4.1 从系统环境变量读取变量
+###  4.1 hook:从系统环境变量读取变量
 配置内容：
 ```toml
 # 若环境变量里有 server_port，而且不为空，则使用环境变量的值，否则使用默认值8080
@@ -84,7 +85,6 @@ port2 = "{osenv.server_port2}"
 export  server_port=80
 go run main.go
 ```
-
 
 ### 4.2 设置配置读取路径
 考虑到不同子模块读取配置的目录可能不同，允许让模块自己设置读取配置文件的根目录。
@@ -106,3 +106,15 @@ conf.Parse("abc.json",&confData)
    # 这也是注释
 }
 ```
+
+
+###  4.4 hook:从 appenv 读取变量
+```toml
+# 补充上 app 的log 目录的路径
+LogFilePath = "{fsenv.LogRootDir}/http/access.log"
+```
+
+支持：
+{fsenv.RootDir}、{fsenv.IDC}、{fsenv.DataRootDir}、
+{fsenv.ConfRootDir}、{fsenv.LogRootDir}、{fsenv.RunMode} 。
+不支持其他的 key，否则将报错

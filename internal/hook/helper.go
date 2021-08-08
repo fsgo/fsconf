@@ -2,7 +2,7 @@
 // Author: hidu
 // Date: 2020/5/4
 
-package helper
+package hook
 
 // Fn helper 的函数
-type Fn func(confContent []byte) ([]byte, error)
+type Fn func(cfPath string, confContent []byte) ([]byte, error)

@@ -41,9 +41,9 @@ func RegisterParser(fileExt string, fn ParserFn) error {
 }
 
 // RegisterHelper （全局）注册一个辅助方法
-func RegisterHelper(h Helper) error {
-	_ = defaultHelpers.Add(h)
-	return Default.RegisterHelper(h)
+func RegisterHelper(h Hook) error {
+	_ = defaultHooks.Add(h)
+	return Default.RegisterHook(h)
 }
 
 // WithContext （全局）设置一个 context，并返回新的对象

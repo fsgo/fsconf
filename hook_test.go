@@ -14,12 +14,16 @@ import (
 
 func TestHelpersExecute(t *testing.T) {
 
-	var hs helpers
-	_ = hs.Add(newHelper("no_d", func(confContent []byte) ([]byte, error) {
+	var hs hooks
+	_ = hs.Add(newHook("no_d", func(cfPath string, confContent []byte) ([]byte, error) {
 		if bytes.Contains(confContent, []byte("error")) {
 			return nil, fmt.Errorf("must error")
 		}
 		return bytes.ReplaceAll(confContent, []byte("d"), []byte("")), nil
+
+	}))
+	_ = hs.Add(newHook("hello world", func(cfPath string, confContent []byte) ([]byte, error) {
+		return bytes.ReplaceAll(confContent, []byte("hello"), []byte("world")), nil
 	}))
 
 	if len(hs) == 0 {
@@ -28,7 +32,7 @@ func TestHelpersExecute(t *testing.T) {
 
 	type args struct {
 		input   []byte
-		helpers helpers
+		helpers hooks
 	}
 	tests := []struct {
 		name       string
@@ -63,10 +67,21 @@ func TestHelpersExecute(t *testing.T) {
 			wantOutput: nil,
 			wantErr:    true,
 		},
+		{
+			name: "case 4-many rules",
+			args: args{
+				input:   []byte("abcd hello"),
+				helpers: hs,
+			},
+			wantOutput: []byte("abc world"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotOutput, err := tt.args.helpers.Execute(context.Background(), nil, tt.args.input)
+			p := &HookParam{
+				Content: tt.args.input,
+			}
+			gotOutput, err := tt.args.helpers.Execute(context.Background(), p)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WithFunc() error = %v, wantErr %v", err, tt.wantErr)
 				return

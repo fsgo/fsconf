@@ -2,7 +2,7 @@
 // Author: hidu
 // Date: 2020/5/4
 
-package helper
+package hook
 
 import (
 	"bytes"
@@ -10,11 +10,11 @@ import (
 	"regexp"
 )
 
-// 模板变量格式：{env.变量名} 或者 {env.变量名|默认值}
+// 模板变量格式：{osenv.变量名} 或者 {osenv.变量名|默认值}
 var osEnvVarReg = regexp.MustCompile(`\{osenv\.([A-Za-z0-9_]+)(\|[^}]+)?\}`)
 
 // OsEnvVars 将配置文件中的 {env.xxx} 的内容，从环境变量中读取并替换
-func OsEnvVars(content []byte) ([]byte, error) {
+func OsEnvVars(_ string, content []byte) ([]byte, error) {
 	contentNew := osEnvVarReg.ReplaceAllFunc(content, func(subStr []byte) []byte {
 		// 将 {osenv.xxx} 中的 xxx 部分取出
 		// 或者 将 {osenv.yyy|val} 中的 yyy|val 部分取出

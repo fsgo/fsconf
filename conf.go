@@ -18,7 +18,8 @@ import (
 // Configure 配置解析定义
 type Configure interface {
 	// Parse 读取并解析配置文件
-	// confName 不包括 conf/ 目录的文件路径
+	// confName ：相对于 conf/ 目录的文件路径
+	// 也支持使用绝对路径
 	Parse(confName string, obj interface{}) error
 
 	// ParseByAbsPath 使用绝对/相对 读取并解析配置文件
@@ -34,8 +35,8 @@ type Configure interface {
 	// 如要添加 .ini 文件的支持，可在此注册对应的解析函数即可
 	RegisterParser(fileExt string, fn ParserFn) error
 
-	// RegisterHelper 注册一个辅助方法
-	RegisterHelper(h Helper) error
+	// RegisterHook 注册一个辅助方法
+	RegisterHook(h Hook) error
 
 	// WithContext 设置一个 context，并返回新的对象
 	WithContext(ctx context.Context) Configure
@@ -60,9 +61,9 @@ func NewDefault() Configure {
 		}
 	}
 
-	for _, h := range defaultHelpers {
-		if err := conf.RegisterHelper(h); err != nil {
-			panic(fmt.Sprintf("RegisterHelper(%q) err=%s", h.Name(), err))
+	for _, h := range defaultHooks {
+		if err := conf.RegisterHook(h); err != nil {
+			panic(fmt.Sprintf("RegisterHook(%q) err=%s", h.Name(), err))
 		}
 	}
 	return conf
@@ -71,7 +72,7 @@ func NewDefault() Configure {
 type confImpl struct {
 	fsenv.WithAppEnv
 	parsers map[string]ParserFn
-	helpers helpers
+	helpers hooks
 	ctx     context.Context
 }
 
@@ -82,6 +83,9 @@ func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
 
 func (c *confImpl) confFileAbsPath(confName string) string {
 	if strings.HasPrefix(confName, "./") {
+		return confName
+	}
+	if filepath.IsAbs(confName) {
 		return confName
 	}
 	return filepath.Join(c.AppEnv().ConfRootDir(), confName)
@@ -101,7 +105,7 @@ func (c *confImpl) readConfDirect(confPath string, obj interface{}) error {
 		return errIO
 	}
 	fileExt := filepath.Ext(confPath)
-	return c.ParseBytes(fileExt, content, obj)
+	return c.parseBytes(confPath, fileExt, content, obj)
 }
 
 func (c *confImpl) context() context.Context {
@@ -112,12 +116,22 @@ func (c *confImpl) context() context.Context {
 }
 
 func (c *confImpl) ParseBytes(fileExt string, content []byte, obj interface{}) error {
+	return c.parseBytes("", fileExt, content, obj)
+}
+
+func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, obj interface{}) error {
 	parserFn, hasParser := c.parsers[fileExt]
 	if fileExt == "" || !hasParser {
 		return fmt.Errorf("fileExt %q is not supported yet", fileExt)
 	}
 
-	contentNew, errHelper := c.helpers.Execute(c.context(), c, content)
+	p := &HookParam{
+		Configure: c,
+		ConfPath:  confPath,
+		Content:   content,
+	}
+
+	contentNew, errHelper := c.helpers.Execute(c.context(), p)
 
 	if errHelper != nil {
 		return errHelper
@@ -145,7 +159,7 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 	return nil
 }
 
-func (c *confImpl) RegisterHelper(h Helper) error {
+func (c *confImpl) RegisterHook(h Hook) error {
 	return c.helpers.Add(h)
 }
 
@@ -156,7 +170,7 @@ func (c *confImpl) clone() *confImpl {
 	for n, fn := range c.parsers {
 		c1.parsers[n] = fn
 	}
-	c1.helpers = append([]Helper{}, c.helpers...)
+	c1.helpers = append([]Hook{}, c.helpers...)
 
 	if env := c.AppEnv(); env != fsenv.Default {
 		c1.SetAppEnv(env)

@@ -10,7 +10,7 @@ import (
 
 	"github.com/fsgo/fsenv"
 
-	"github.com/fsgo/fsconf/internal/helper"
+	"github.com/fsgo/fsconf/internal/hook"
 	"github.com/fsgo/fsconf/internal/parser"
 )
 
@@ -149,7 +149,7 @@ func TestParseByAbsPath(t *testing.T) {
 func TestRegisterHelper(t *testing.T) {
 	type args struct {
 		name string
-		fn   helper.Fn
+		fn   hook.Fn
 	}
 	tests := []struct {
 		name    string
@@ -160,7 +160,7 @@ func TestRegisterHelper(t *testing.T) {
 			name: "case 1",
 			args: args{
 				name: "",
-				fn:   helper.OsEnvVars,
+				fn:   hook.OsEnvVars,
 			},
 			wantErr: true,
 		},
@@ -168,7 +168,7 @@ func TestRegisterHelper(t *testing.T) {
 			name: "case 2",
 			args: args{
 				name: "test_helper",
-				fn:   helper.OsEnvVars,
+				fn:   hook.OsEnvVars,
 			},
 			wantErr: false,
 		},
@@ -176,16 +176,16 @@ func TestRegisterHelper(t *testing.T) {
 			name: "case 3- name is same as case 2",
 			args: args{
 				name: "test_helper",
-				fn:   helper.OsEnvVars,
+				fn:   hook.OsEnvVars,
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := newHelper(tt.args.name, tt.args.fn)
+			h := newHook(tt.args.name, tt.args.fn)
 			if err := RegisterHelper(h); (err != nil) != tt.wantErr {
-				t.Errorf("RegisterHelper() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RegisterHook() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -10,7 +10,7 @@ import (
 
 	"github.com/fsgo/fsenv"
 
-	"github.com/fsgo/fsconf/internal/helper"
+	"github.com/fsgo/fsconf/internal/hook"
 	"github.com/fsgo/fsconf/internal/parser"
 )
 
@@ -35,16 +35,16 @@ func Test_confImpl(t *testing.T) {
 }
 
 func TestNewDefault1(t *testing.T) {
-	hd := append([]Helper{}, defaultHelpers...)
+	hd := append([]Hook{}, defaultHooks...)
 	defer func() {
-		defaultHelpers = hd
+		defaultHooks = hd
 		if re := recover(); re == nil {
 			t.Errorf("want panic")
 		}
 	}()
-	h := newHelper("test", helper.OsEnvVars)
+	h := newHook("test", hook.OsEnvVars)
 	// helper 有重复的时候
-	defaultHelpers = append(defaultHelpers, h, h)
+	defaultHooks = append(defaultHooks, h, h)
 	NewDefault()
 }
 
