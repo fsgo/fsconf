@@ -2,6 +2,8 @@
 ## 1.功能概述
 一个可扩展的、简单的配置读取库，目前支持`.json`、`.toml`、`.xml`、`.yml`文件的配置。  
 
+所有以 "#" 开头的行都将认为是注释。
+
 
 [![Build Status](https://travis-ci.org/fsgo/fsconf.png?branch=master)](https://travis-ci.org/fsgo/fsconf)
 [![GoCover](https://gocover.io/_badge/github.com/fsgo/fsconf)](https://gocover.io/github.com/fsgo/fsconf)
@@ -127,7 +129,7 @@ LogFilePath = "{fsenv.LogRootDir}/http/access.log"
 
 #### 1. include：包含子文件
 如 a.toml 文件内容：
-```toml
+```
 # hook.template  Enable=true
 A="123"
 
