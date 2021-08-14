@@ -13,7 +13,6 @@ import (
 )
 
 func TestHelpersExecute(t *testing.T) {
-
 	var hs hooks
 	_ = hs.Add(newHook("no_d", func(cfPath string, confContent []byte) ([]byte, error) {
 		if bytes.Contains(confContent, []byte("error")) {

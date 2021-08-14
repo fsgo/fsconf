@@ -44,3 +44,33 @@ line6 #666`),
 		})
 	}
 }
+
+func TestHeadComments(t *testing.T) {
+	type args struct {
+		input string
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "case 1",
+			args: args{
+				input: "#a\n# b\n \n\n ### c\nhello#d",
+			},
+			want: []string{
+				"a",
+				"b",
+				"c",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := HeadComments([]byte(tt.args.input)); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HeadComments() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

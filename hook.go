@@ -25,20 +25,21 @@ type HookParam struct {
 }
 
 var defaultHooks hooks = []Hook{
+	&hookInclude{},
 	newHook("osenv", hook.OsEnvVars),
-	&fsEnvHelper{},
+	&hookFsEnv{},
 }
 
 type hooks []Hook
 
 func (hs *hooks) Add(h Hook) error {
 	if h.Name() == "" {
-		return fmt.Errorf("helper.Name is empty, not allow")
+		return fmt.Errorf("hook.Name is empty, not allow")
 	}
 
 	for _, h1 := range *hs {
 		if h.Name() == h1.Name() {
-			return fmt.Errorf("helper=%q already exists", h.Name())
+			return fmt.Errorf("hook=%q already exists", h.Name())
 		}
 	}
 	*hs = append(*hs, h)
@@ -59,7 +60,7 @@ func (hs hooks) Execute(ctx context.Context, p *HookParam) (output []byte, err e
 		p.Content = content
 		content, err = hk.Execute(ctx, p)
 		if err != nil {
-			return nil, fmt.Errorf("helper=%q has error:%w", hk.Name(), err)
+			return nil, fmt.Errorf("hook=%q has error:%w", hk.Name(), err)
 		}
 	}
 	return content, err

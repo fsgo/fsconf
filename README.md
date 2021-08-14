@@ -118,3 +118,29 @@ LogFilePath = "{fsenv.LogRootDir}/http/access.log"
 {fsenv.RootDir}、{fsenv.IDC}、{fsenv.DataRootDir}、
 {fsenv.ConfRootDir}、{fsenv.LogRootDir}、{fsenv.RunMode} 。
 不支持其他的 key，否则将报错
+
+###  4.5 hook:使用 template 能力
+该功能默认不开启，需要在文件头部 以注释形式声明启用。
+```
+# hook.template  Enable=true
+```
+
+#### 1. include：包含子文件
+如 a.toml 文件内容：
+```toml
+# hook.template  Enable=true
+A="123"
+
+{template include "sub/*.toml" template}
+```
+sub/b.toml 文件内容：
+```toml
+B=100
+```
+最终等效于(a.toml):
+```
+# hook.template  Enable=true
+A="123"
+
+B=100
+```

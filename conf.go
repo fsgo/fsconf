@@ -72,7 +72,7 @@ func NewDefault() Configure {
 type confImpl struct {
 	fsenv.WithAppEnv
 	parsers map[string]ParserFn
-	helpers hooks
+	hooks   hooks
 	ctx     context.Context
 }
 
@@ -131,10 +131,10 @@ func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, o
 		Content:   content,
 	}
 
-	contentNew, errHelper := c.helpers.Execute(c.context(), p)
+	contentNew, errHook := c.hooks.Execute(c.context(), p)
 
-	if errHelper != nil {
-		return errHelper
+	if errHook != nil {
+		return errHook
 	}
 
 	if errParser := parserFn(contentNew, obj); errParser != nil {
@@ -160,7 +160,7 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 }
 
 func (c *confImpl) RegisterHook(h Hook) error {
-	return c.helpers.Add(h)
+	return c.hooks.Add(h)
 }
 
 func (c *confImpl) clone() *confImpl {
@@ -170,7 +170,7 @@ func (c *confImpl) clone() *confImpl {
 	for n, fn := range c.parsers {
 		c1.parsers[n] = fn
 	}
-	c1.helpers = append([]Hook{}, c.helpers...)
+	c1.hooks = append([]Hook{}, c.hooks...)
 
 	if env := c.AppEnv(); env != fsenv.Default {
 		c1.SetAppEnv(env)

@@ -12,19 +12,18 @@ import (
 	"github.com/fsgo/fsenv"
 )
 
-var _ Hook = (*fsEnvHelper)(nil)
+var _ Hook = (*hookFsEnv)(nil)
 
-type fsEnvHelper struct {
-}
+type hookFsEnv struct{}
 
-func (f *fsEnvHelper) Name() string {
+func (f *hookFsEnv) Name() string {
 	return "fsenv"
 }
 
 // 模板变量格式：{fsenv.变量名}
 var fsEnvVarReg = regexp.MustCompile(`\{fsenv\.([A-Za-z0-9_]+)\}`)
 
-func (f *fsEnvHelper) Execute(ctx context.Context, p *HookParam) (output []byte, err error) {
+func (f *hookFsEnv) Execute(ctx context.Context, p *HookParam) (output []byte, err error) {
 	contentNew := fsEnvVarReg.ReplaceAllFunc(p.Content, func(subStr []byte) []byte {
 		// 将 {fsenv.xxx} 中的 xxx 部分取出
 		key := subStr[len("{fsenv.") : len(subStr)-1] // eg: xxx
@@ -41,7 +40,7 @@ func (f *fsEnvHelper) Execute(ctx context.Context, p *HookParam) (output []byte,
 	return contentNew, err
 }
 
-func (f *fsEnvHelper) getValue(key string, cf Configure) (string, error) {
+func (f *hookFsEnv) getValue(key string, cf Configure) (string, error) {
 	cae, ok := cf.(fsenv.HasAppEnv)
 	if !ok {
 		return "", fmt.Errorf("cannot get appenv")

@@ -4,10 +4,6 @@
 
 package parser
 
-import (
-	"bytes"
-)
-
 // Fn 对应文件后缀的配置解析方法
 type Fn func(bf []byte, obj interface{}) error
 
@@ -20,18 +16,3 @@ const (
 	// FileJSON  json
 	FileJSON = ".json"
 )
-
-// StripComment 去除单行的'#'注释
-// 只支持单行，不支持行尾
-func StripComment(input []byte) (out []byte) {
-	var buf bytes.Buffer
-	lines := bytes.Split(input, []byte("\n"))
-	for _, line := range lines {
-		lineN := bytes.TrimSpace(line)
-		if !bytes.HasPrefix(lineN, []byte("#")) {
-			buf.Write(line)
-		}
-		buf.WriteString("\n")
-	}
-	return bytes.TrimSpace(buf.Bytes())
-}
