@@ -77,18 +77,24 @@ type confImpl struct {
 }
 
 func (c *confImpl) Parse(confName string, obj interface{}) (err error) {
-	confAbsPath := c.confFileAbsPath(confName)
+	confAbsPath, err := c.confFileAbsPath(confName)
+	if err != nil {
+		return err
+	}
 	return c.ParseByAbsPath(confAbsPath, obj)
 }
 
-func (c *confImpl) confFileAbsPath(confName string) string {
+func (c *confImpl) confFileAbsPath(confName string) (string, error) {
 	if strings.HasPrefix(confName, "./") {
-		return confName
+		return filepath.Abs(confName)
+	}
+	if strings.HasPrefix(confName, "../") {
+		return filepath.Abs(confName)
 	}
 	if filepath.IsAbs(confName) {
-		return confName
+		return confName, nil
 	}
-	return filepath.Join(c.AppEnv().ConfRootDir(), confName)
+	return filepath.Join(c.AppEnv().ConfRootDir(), confName), nil
 }
 
 func (c *confImpl) ParseByAbsPath(confAbsPath string, obj interface{}) (err error) {
@@ -144,7 +150,11 @@ func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, o
 }
 
 func (c *confImpl) Exists(confName string) bool {
-	info, err := os.Stat(c.confFileAbsPath(confName))
+	p, err := c.confFileAbsPath(confName)
+	if err != nil {
+		return false
+	}
+	info, err := os.Stat(p)
 	if err != nil {
 		return false
 	}

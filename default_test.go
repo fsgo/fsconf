@@ -5,6 +5,8 @@
 package fsconf
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -20,6 +22,11 @@ func init() {
 }
 
 func TestExists(t *testing.T) {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
 	type args struct {
 		confName string
 	}
@@ -39,6 +46,20 @@ func TestExists(t *testing.T) {
 			name: "case 2",
 			args: args{
 				confName: "abc.json",
+			},
+			want: true,
+		},
+		{
+			name: "case 3 relative path",
+			args: args{
+				confName: "./testdata/conf/abc.json",
+			},
+			want: true,
+		},
+		{
+			name: "case 4 relative path",
+			args: args{
+				confName: "../" + filepath.Base(wd) + "/testdata/conf/abc.json",
 			},
 			want: true,
 		},

@@ -66,6 +66,12 @@ func main() {
 	if err := fsconf.Parse("hosts.json", &hs); err != nil {
 		log.Fatal(err)
 	}
+	
+	// 读取当前目录下的 hosts.json
+	// fsconf.Parse("./hosts.json", &hs)
+	
+	// 读取上级目录的 hosts.json
+	// fsconf.Parse("../hosts.json", &hs)
 
 	fmt.Println("hosts:", hs)
 }
