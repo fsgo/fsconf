@@ -206,7 +206,7 @@ func TestRegisterHelper(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := newHook(tt.args.name, tt.args.fn)
 			if err := RegisterHelper(h); (err != nil) != tt.wantErr {
-				t.Errorf("RegisterHook() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RegisterInterceptor() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

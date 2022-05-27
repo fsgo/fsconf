@@ -63,7 +63,7 @@ func NewDefault() Configure {
 
 	for _, h := range defaultHooks {
 		if err := conf.RegisterHook(h); err != nil {
-			panic(fmt.Sprintf("RegisterHook(%q) err=%s", h.Name(), err))
+			panic(fmt.Sprintf("RegisterInterceptor(%q) err=%s", h.Name(), err))
 		}
 	}
 	return conf
