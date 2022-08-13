@@ -41,6 +41,17 @@ RegisterHook(h Helper) error
 func NewDefault() Configure 
 ```
 
+若对象实现 `AutoChecker` 接口，当解析完成后会自动调用 `AutoCheck` 方法
+```go
+// AutoChecker 当配置解析完成后，用于自动校验
+type AutoChecker interface {
+	AutoCheck() error
+}
+```
+
+除此之外，若解析成是 Struct，会自动使用 [github.com/go-playground/validator/v10](https://github.com/go-playground/validator)
+对自动进行校验
+
 ## 3.使用示例
 
 ```go

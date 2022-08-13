@@ -13,18 +13,18 @@ var Default = NewDefault()
 
 // Parse 解析配置，配置文件默认认为在 conf/目录下,
 // 如 有 conf/abc.toml ，则 confName="abc.toml"
-func Parse(confName string, obj interface{}) (err error) {
+func Parse(confName string, obj any) (err error) {
 	return Default.Parse(confName, obj)
 }
 
 // ParseByAbsPath 解析绝对路径的配置
-func ParseByAbsPath(confAbsPath string, obj interface{}) (err error) {
+func ParseByAbsPath(confAbsPath string, obj any) (err error) {
 	return Default.ParseByAbsPath(confAbsPath, obj)
 }
 
 // ParseBytes （全局）解析 bytes
 // fileExt 是文件后缀，如.json、.toml
-func ParseBytes(fileExt string, content []byte, obj interface{}) error {
+func ParseBytes(fileExt string, content []byte, obj any) error {
 	return Default.ParseBytes(fileExt, content, obj)
 }
 

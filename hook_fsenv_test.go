@@ -106,15 +106,15 @@ var _ Configure = (*testCfNoEnv)(nil)
 type testCfNoEnv struct {
 }
 
-func (t *testCfNoEnv) Parse(confName string, obj interface{}) error {
+func (t *testCfNoEnv) Parse(confName string, obj any) error {
 	return nil
 }
 
-func (t *testCfNoEnv) ParseByAbsPath(confAbsPath string, obj interface{}) error {
+func (t *testCfNoEnv) ParseByAbsPath(confAbsPath string, obj any) error {
 	return nil
 }
 
-func (t *testCfNoEnv) ParseBytes(fileExt string, content []byte, obj interface{}) error {
+func (t *testCfNoEnv) ParseBytes(fileExt string, content []byte, obj any) error {
 	return nil
 }
 

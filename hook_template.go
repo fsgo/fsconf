@@ -49,7 +49,7 @@ func (h *hookInclude) Execute(ctx context.Context, p *HookParam) (output []byte,
 func (h *hookInclude) exec(ctx context.Context, p *HookParam) (output []byte, err error) {
 	tmpl := template.New("config")
 	tmpl.Delims("{template", "template}")
-	tmpl.Funcs(map[string]interface{}{
+	tmpl.Funcs(map[string]any{
 		"include": func(name string) (string, error) {
 			return h.fnInclude(ctx, name, p)
 		},

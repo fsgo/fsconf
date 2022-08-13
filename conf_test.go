@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/fsgo/fsenv"
+	"github.com/stretchr/testify/require"
 
 	"github.com/fsgo/fsconf/internal/hook"
 	"github.com/fsgo/fsconf/internal/parser"
@@ -20,7 +21,7 @@ func Test_confImpl(t *testing.T) {
 		RootDir: "./testdata",
 	})
 	conf.(fsenv.CanSetAppEnv).SetAppEnv(env)
-	var a interface{}
+	var a any
 	if err := conf.Parse("abc.json", &a); err == nil {
 		t.Errorf("expect has error")
 	}
@@ -94,4 +95,51 @@ func Test_confImpl_ParseBytes(t *testing.T) {
 			}
 		})
 	}
+
+	type user struct {
+		Name string `validate:"required"`
+		Age  int
+	}
+
+	t.Run("validator-1", func(t *testing.T) {
+		var u *user
+		err := ParseBytes(".json", []byte(`{"Age":12}`), &u)
+		require.Equal(t, &user{Age: 12}, u)
+		require.Error(t, err)
+	})
+
+	t.Run("validator-2", func(t *testing.T) {
+		var u *user
+		err := ParseBytes(".json", []byte(``), &u)
+		require.Nil(t, u)
+		require.Error(t, err)
+	})
+
+	t.Run("validator-3", func(t *testing.T) {
+		var u *user
+		err := ParseBytes(".json", []byte(`{"Age":12,"Name":""}`), &u)
+		require.Equal(t, &user{Age: 12}, u)
+		require.Error(t, err)
+	})
+
+	t.Run("validator-4", func(t *testing.T) {
+		var u *user
+		err := ParseBytes(".json", []byte(`{"Age":12,"Name":"hello"}`), &u)
+		require.Equal(t, &user{Age: 12, Name: "hello"}, u)
+		require.NoError(t, err)
+	})
+
+	t.Run("validator-5", func(t *testing.T) {
+		u := &user{}
+		err := ParseBytes(".json", []byte(`{"Age":12,"Name":"hello"}`), u)
+		require.Equal(t, &user{Age: 12, Name: "hello"}, u)
+		require.NoError(t, err)
+	})
+
+	t.Run("validator-6", func(t *testing.T) {
+		u := &user{}
+		err := ParseBytes(".json", []byte(`{"Age":12,"Name":""}`), u)
+		require.Equal(t, &user{Age: 12}, u)
+		require.Error(t, err)
+	})
 }
