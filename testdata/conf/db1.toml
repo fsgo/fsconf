@@ -1,3 +1,14 @@
-
+# hook.template  Enable=true
 name="abc"
 charset="utf-8"
+
+{{ $app:=(osenv "APP") }}
+{{ if (suffix $app ".fenji")}}
+Port = "{osenv.Port1}"
+{{else}}
+Port = "{osenv.Port2}"
+{{ end}}
+
+{{ if eq .IDC "bj" }}
+IDC="bj"
+{{ end }}

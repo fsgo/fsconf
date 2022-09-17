@@ -1,6 +1,8 @@
 # hook.template  Enable=true
 A="a"
+Port = {osenv.Port1}
 
-{template include "sub1/*.toml" template}
+{{ include "sub1/*.toml" }}
 
-{template include "sub2/z.toml" template}
+{{ include "sub2/z.toml" }}
+

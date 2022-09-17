@@ -7,8 +7,9 @@ package fsconf
 import (
 	"context"
 	"os"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_hookInclude_Execute(t *testing.T) {
@@ -41,7 +42,19 @@ func Test_hookInclude_Execute(t *testing.T) {
 					return getHookParam("testdata/conf/include.toml")
 				},
 			},
-			wantOutput: []byte("# hook.template  Enable=true\nA=\"a\"\n\nB=\"b\"\nB1=\"b1\"\nC=\"c\"\n\nZ=\"z\"\n"),
+			wantOutput: []byte(
+				`# hook.template  Enable=true
+A="a"
+Port = {osenv.Port1}
+
+B="b"
+B1="b1"
+C="c"
+
+Z="z"
+
+
+`),
 		},
 		{
 			name: "include not found",
@@ -75,20 +88,18 @@ func Test_hookInclude_Execute(t *testing.T) {
 					return p
 				},
 			},
-			wantOutput: []byte("A=\"a\"\n\n{template include \"not_found.toml\" template}\n"),
+			wantOutput: []byte("A=\"a\"\n\n{{ include \"not_found.toml\" }}\n"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := &hookInclude{}
+			h := &hookTemplate{}
 			gotOutput, err := h.Execute(tt.args.ctx, tt.args.getP())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotOutput, tt.wantOutput) {
-				t.Errorf("Execute() gotOutput = %q, want %q", gotOutput, tt.wantOutput)
-			}
+			require.Equal(t, string(tt.wantOutput), string(gotOutput))
 		})
 	}
 }

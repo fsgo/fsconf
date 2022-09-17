@@ -76,11 +76,11 @@ func NewDefault() Configure {
 }
 
 type confImpl struct {
-	fsenv.WithAppEnv
-	parsers  map[string]ParserFn
-	hooks    hooks
 	ctx      context.Context
 	validate Validator
+	parsers  map[string]ParserFn
+	hooks    hooks
+	fsenv.WithAppEnv
 }
 
 func (c *confImpl) Parse(confName string, obj any) (err error) {

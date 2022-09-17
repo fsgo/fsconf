@@ -10,62 +10,99 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 	"text/template"
 
+	"github.com/fsgo/fsenv"
+
 	"github.com/fsgo/fsconf/internal/parser"
 )
 
-var _ Hook = (*hookInclude)(nil)
+var _ Hook = (*hookTemplate)(nil)
 
-type hookInclude struct{}
+type hookTemplate struct{}
 
-func (h *hookInclude) Name() string {
+func (h *hookTemplate) Name() string {
 	return "template"
 }
 
-var hookTplEnableReg = regexp.MustCompile(`hook\.template\s+Enable=true`)
+var hookTplPrefix = "hook.template "
 
-func (h *hookInclude) Execute(ctx context.Context, p *HookParam) (output []byte, err error) {
-	cmts := parser.HeadComments(p.Content)
+func (h *hookTemplate) Execute(ctx context.Context, hp *HookParam) (output []byte, err error) {
+	cmts := parser.HeadComments(hp.Content)
 	if len(cmts) == 0 {
-		return p.Content, nil
+		return hp.Content, nil
 	}
-	var enable bool
+	params := make(map[string]string)
 	for _, cmt := range cmts {
-		if hookTplEnableReg.MatchString(cmt) {
-			enable = true
-			break
+		if strings.HasPrefix(cmt, hookTplPrefix) {
+			arr := strings.Fields(cmt[len(hookTplPrefix):])
+			for i := 0; i < len(arr); i++ {
+				tmp := strings.Split(arr[i], "=")
+				if len(tmp) == 2 && len(tmp[0]) > 0 && len(tmp[1]) > 0 {
+					params[tmp[0]] = tmp[1]
+				}
+			}
 		}
 	}
-	if !enable {
-		return p.Content, nil
+	if params["Enable"] != "true" {
+		return hp.Content, nil
 	}
-	return h.exec(ctx, p)
+	return h.exec(ctx, hp, params)
 }
 
-func (h *hookInclude) exec(ctx context.Context, p *HookParam) (output []byte, err error) {
+func (h *hookTemplate) exec(ctx context.Context, hp *HookParam, tp map[string]string) (output []byte, err error) {
 	tmpl := template.New("config")
-	tmpl.Delims("{template", "template}")
+	left := "{{"
+	right := "}}"
+	if v := tp["Left"]; len(v) > 0 {
+		left = v
+	}
+	if v := tp["Right"]; len(v) > 0 {
+		right = v
+	}
+	tmpl.Delims(left, right)
 	tmpl.Funcs(map[string]any{
 		"include": func(name string) (string, error) {
-			return h.fnInclude(ctx, name, p)
+			return h.fnInclude(ctx, name, hp, tp)
+		},
+		"osenv": func(name string) string {
+			return os.Getenv(name)
+		},
+		"contains": func(s string, sub string) bool {
+			return strings.Contains(s, sub)
+		},
+		"prefix": func(s string, prefix string) bool {
+			return strings.HasPrefix(s, prefix)
+		},
+		"suffix": func(s string, suffix string) bool {
+			return strings.HasSuffix(s, suffix)
 		},
 	})
-	tmpl, err = tmpl.Parse(string(p.Content))
+	tmpl, err = tmpl.Parse(string(hp.Content))
 	if err != nil {
 		return nil, err
 	}
 	buf := &bytes.Buffer{}
-	if err = tmpl.Execute(buf, nil); err != nil {
+	data := make(map[string]string, 6)
+	if cae, ok := hp.Configure.(fsenv.HasAppEnv); ok {
+		ce := cae.AppEnv()
+		data["IDC"] = ce.IDC()
+		data["RootDir"] = ce.RootDir()
+		data["ConfRootDir"] = ce.ConfRootDir()
+		data["LogRootDir"] = ce.LogRootDir()
+		data["DataRootDir"] = ce.DataRootDir()
+		data["RunMode"] = string(ce.RunMode())
+	}
+
+	if err = tmpl.Execute(buf, data); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
 }
 
-func (h *hookInclude) pathHasMeta(path string) bool {
+func (h *hookTemplate) pathHasMeta(path string) bool {
 	magicChars := `*?[`
 	if runtime.GOOS != "windows" {
 		magicChars = `*?[\`
@@ -73,7 +110,7 @@ func (h *hookInclude) pathHasMeta(path string) bool {
 	return strings.ContainsAny(path, magicChars)
 }
 
-func (h *hookInclude) fnInclude(ctx context.Context, name string, p *HookParam) (string, error) {
+func (h *hookTemplate) fnInclude(ctx context.Context, name string, p *HookParam, tp map[string]string) (string, error) {
 	if p.ConfPath == "" {
 		return "", fmt.Errorf("p.ConfPath is empty cannot use include")
 	}
@@ -106,7 +143,7 @@ func (h *hookInclude) fnInclude(ctx context.Context, name string, p *HookParam) 
 			Content:   body,
 			Configure: p.Configure,
 		}
-		o1, err2 := h.exec(ctx, p1)
+		o1, err2 := h.exec(ctx, p1, tp)
 		if err2 != nil {
 			return "", err2
 		}

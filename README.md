@@ -100,7 +100,7 @@ port = "{osenv.server_port|8080}"
 port2 = "{osenv.server_port2}"
 ```
 这样就可以在运行前通过设置环境变量来影响配置文件：
-```
+```bash
 export  server_port=80
 go run main.go
 ```
@@ -134,32 +134,79 @@ LogFilePath = "{fsenv.LogRootDir}/http/access.log"
 ```
 
 支持：
-{fsenv.RootDir}、{fsenv.IDC}、{fsenv.DataRootDir}、
-{fsenv.ConfRootDir}、{fsenv.LogRootDir}、{fsenv.RunMode} 。
+`{fsenv.RootDir}`、`{fsenv.IDC}`、`{fsenv.DataRootDir}`、
+`{fsenv.ConfRootDir}`、`{fsenv.LogRootDir}`、`{fsenv.RunMode}` 。
 不支持其他的 key，否则将报错
 
 ###  4.5 hook:使用 template 能力
-该功能默认不开启，需要在文件头部 以注释形式声明启用。
-```
+该功能默认不开启，需要在文件头部以注释形式声明启用。
+```toml
 # hook.template  Enable=true
 ```
 
-#### 1. include：包含子文件
-如 a.toml 文件内容：
+
+#### 1. 表达式
+支持使用 template表达式： https://pkg.go.dev/text/template  
+额外扩展新增了如下函数：
+```go
+// 包含子文件，支持一个或子目录下多个文件
+// 若文件不存在，会报错
+"include": func(name string) (string, error) {
+    return h.fnInclude(ctx, name, hp, tp)
+},
+
+
+"osenv": func(name string) string {
+    return os.Getenv(name)
+},
+
+"contains": func(s string, sub string) bool {
+    return strings.Contains(s, sub)
+},
+
+"prefix": func(s string, prefix string) bool {
+    return strings.HasPrefix(s, prefix)
+},
+
+"suffix": func(s string, suffix string) bool {
+    return strings.HasSuffix(s, suffix)
+},
 ```
+
+内置如下变量：
+```go
+data["IDC"] = ce.IDC()
+data["RootDir"] = ce.RootDir()
+data["ConfRootDir"] = ce.ConfRootDir()
+data["LogRootDir"] = ce.LogRootDir()
+data["DataRootDir"] = ce.DataRootDir()
+data["RunMode"] = string(ce.RunMode())
+```
+
+#### 2. 示例
+如 a.toml 文件内容：
+```toml
 # hook.template  Enable=true
 A="123"
 
-{template include "sub/*.toml" template}
+{{ include "sub/*.toml" }}
+
+# 若当前 IDC 是 bj，则会输出 IDC 字段
+{{ if eq .IDC "bj" }}
+IDC="bj"
+{{ end }}
+
 ```
 sub/b.toml 文件内容：
 ```toml
 B=100
 ```
 最终等效于(a.toml):
-```
+```toml
 # hook.template  Enable=true
 A="123"
 
 B=100
+
+IDC="bj"
 ```

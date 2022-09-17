@@ -1,4 +1,4 @@
 # hook.template  Enable=true
 A="a"
 
-{template include "not_found.toml" template}
+{{ include "not_found.toml" }}

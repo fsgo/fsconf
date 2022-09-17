@@ -10,16 +10,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/fsgo/fsenv"
-
 	"github.com/fsgo/fsconf/internal/hook"
 	"github.com/fsgo/fsconf/internal/parser"
 )
-
-func init() {
-	env := fsenv.NewAppEnv(fsenv.Value{RootDir: "./testdata"})
-	Default.(fsenv.CanSetAppEnv).SetAppEnv(env)
-}
 
 func TestExists(t *testing.T) {
 	wd, err := os.Getwd()
@@ -113,6 +106,7 @@ func TestParse(t *testing.T) {
 			want: map[string]string{
 				"name":    "abc",
 				"charset": "utf-8",
+				"Port":    "8080",
 			},
 			wantErr: false,
 		},

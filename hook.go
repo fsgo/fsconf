@@ -25,7 +25,7 @@ type HookParam struct {
 }
 
 var defaultHooks hooks = []Hook{
-	&hookInclude{},
+	&hookTemplate{},
 	newHook("osenv", hook.OsEnvVars),
 	&hookFsEnv{},
 }
@@ -67,8 +67,8 @@ func (hs hooks) Execute(ctx context.Context, p *HookParam) (output []byte, err e
 }
 
 type hookTpl struct {
-	name string
 	fn   hook.Fn
+	name string
 }
 
 func (h *hookTpl) Name() string {

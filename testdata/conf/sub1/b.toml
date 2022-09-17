@@ -1,2 +1,2 @@
 B="b"
-{template include "bsub/*.toml" template}
+{{ include "bsub/*.toml" }}

@@ -23,7 +23,7 @@ func StripComment(input []byte) (out []byte) {
 	return bytes.TrimSpace(buf.Bytes())
 }
 
-// HeadComments 获取头部的注释内容
+// HeadComments 获取头部的所有注释内容
 func HeadComments(input []byte) []string {
 	var cmts []string
 	lines := bytes.Split(input, []byte("\n"))
