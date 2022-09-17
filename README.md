@@ -185,7 +185,7 @@ data["RunMode"] = string(ce.RunMode())
 
 #### 2. 示例
 如 a.toml 文件内容：
-```toml
+```
 # hook.template  Enable=true
 A="123"
 
