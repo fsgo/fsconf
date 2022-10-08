@@ -19,7 +19,6 @@ func TestHelpersExecute(t *testing.T) {
 			return nil, fmt.Errorf("must error")
 		}
 		return bytes.ReplaceAll(confContent, []byte("d"), []byte("")), nil
-
 	}))
 	_ = hs.Add(newHook("hello world", func(cfPath string, confContent []byte) ([]byte, error) {
 		return bytes.ReplaceAll(confContent, []byte("hello"), []byte("world")), nil
