@@ -11,7 +11,7 @@ import (
 
 // JSON .json 文件的解析方法
 // 若内容以 # 开头，则该为注释
-func JSON(txt []byte, obj interface{}) error {
+func JSON(txt []byte, obj any) error {
 	bf := StripComment(txt)
 	dec := json.NewDecoder(bytes.NewReader(bf))
 	dec.UseNumber()

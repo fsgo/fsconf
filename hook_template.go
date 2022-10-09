@@ -111,7 +111,7 @@ func (h *hookTemplate) pathHasMeta(path string) bool {
 }
 
 func (h *hookTemplate) fnInclude(ctx context.Context, name string, p *HookParam, tp map[string]string) (string, error) {
-	if p.ConfPath == "" {
+	if len(p.ConfPath) == 0 {
 		return "", fmt.Errorf("p.ConfPath is empty cannot use include")
 	}
 	var fp string

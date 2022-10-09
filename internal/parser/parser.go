@@ -5,7 +5,7 @@
 package parser
 
 // Fn 对应文件后缀的配置解析方法
-type Fn func(bf []byte, obj interface{}) error
+type Fn func(bf []byte, obj any) error
 
 const (
 	// 已支持的文件后缀

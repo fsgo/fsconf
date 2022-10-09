@@ -33,7 +33,7 @@ var defaultHooks hooks = []Hook{
 type hooks []Hook
 
 func (hs *hooks) Add(h Hook) error {
-	if h.Name() == "" {
+	if len(h.Name()) == 0 {
 		return fmt.Errorf("hook.Name is empty, not allow")
 	}
 

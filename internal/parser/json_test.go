@@ -11,7 +11,7 @@ import (
 func Test_JSONParser(t *testing.T) {
 	type args struct {
 		txt []byte
-		obj interface{}
+		obj any
 	}
 	tests := []struct {
 		name    string

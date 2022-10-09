@@ -26,7 +26,7 @@ func OsEnvVars(_ string, content []byte) ([]byte, error) {
 			key := string(keyWithDefaultVal[:idx])  // eg: yyy
 			defaultVal := keyWithDefaultVal[idx+1:] // eg: val
 			envVal := os.Getenv(key)
-			if envVal == "" {
+			if len(envVal) == 0 {
 				return defaultVal
 			}
 			return []byte(envVal)

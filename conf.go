@@ -134,7 +134,7 @@ func (c *confImpl) ParseBytes(fileExt string, content []byte, obj any) error {
 
 func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, obj any) error {
 	parserFn, hasParser := c.parsers[fileExt]
-	if fileExt == "" || !hasParser {
+	if len(fileExt) == 0 || !hasParser {
 		return fmt.Errorf("fileExt %q is not supported yet", fileExt)
 	}
 
