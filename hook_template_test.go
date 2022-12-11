@@ -6,6 +6,8 @@ package fsconf
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -102,4 +104,43 @@ Z="z"
 			require.Equal(t, string(tt.wantOutput), string(gotOutput))
 		})
 	}
+}
+
+func Test_fnFetch(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		k := r.URL.Query().Get("k")
+		_, _ = w.Write([]byte("hello-" + k))
+	}))
+	defer ts.Close()
+	api := ts.URL
+	t.Run("server ok", func(t *testing.T) {
+		txt := `# hook.template  Enable=true
+K1="{{ fetch "` + api + `?k=k1" }}"
+K2="{{ fetch "` + api + `?k=k2" }}"
+K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
+`
+		mp := map[string]string{}
+		err1 := ParseBytes(".toml", []byte(txt), &mp)
+		require.NoError(t, err1)
+		want1 := map[string]string{
+			"K1": "hello-k1",
+			"K2": "hello-k2",
+			"K3": "hello-k3",
+		}
+		require.Equal(t, want1, mp)
+	})
+
+	t.Run("server unreachable", func(t *testing.T) {
+		ts.Close()
+		txt := `# hook.template  Enable=true
+K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
+`
+		mp := map[string]string{}
+		err1 := ParseBytes(".toml", []byte(txt), &mp)
+		require.NoError(t, err1)
+		want1 := map[string]string{
+			"K3": "hello-k3",
+		}
+		require.Equal(t, want1, mp)
+	})
 }

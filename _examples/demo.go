@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/fsgo/fsenv"
+
 	"github.com/fsgo/fsconf"
 )
 
@@ -20,6 +22,7 @@ type Host struct {
 
 func main() {
 	var hs Hosts
+	fmt.Println("DataRootDir=", fsenv.DataRootDir())
 	if err := fsconf.Parse("hosts.json", &hs); err != nil {
 		log.Fatal(err)
 	}

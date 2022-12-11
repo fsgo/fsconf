@@ -7,16 +7,21 @@ package fsconf
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/fsgo/fsenv"
 
 	"github.com/fsgo/fsconf/internal/parser"
+	"github.com/fsgo/fsconf/internal/xcache"
 )
 
 var _ Hook = (*hookTemplate)(nil)
@@ -67,6 +72,9 @@ func (h *hookTemplate) exec(ctx context.Context, hp *HookParam, tp map[string]st
 		"include": func(name string) (string, error) {
 			return h.fnInclude(ctx, name, hp, tp)
 		},
+		"fetch": func(name string, args ...string) (string, error) {
+			return h.fnFetch(ctx, hp, tp, name, args)
+		},
 		"osenv": func(name string) string {
 			return os.Getenv(name)
 		},
@@ -112,7 +120,7 @@ func (h *hookTemplate) pathHasMeta(path string) bool {
 
 func (h *hookTemplate) fnInclude(ctx context.Context, name string, p *HookParam, tp map[string]string) (string, error) {
 	if len(p.ConfPath) == 0 {
-		return "", fmt.Errorf("p.ConfPath is empty cannot use include")
+		return "", errors.New("p.ConfPath is empty cannot use include")
 	}
 	var fp string
 	if filepath.IsAbs(name) {
@@ -150,4 +158,71 @@ func (h *hookTemplate) fnInclude(ctx context.Context, name string, p *HookParam,
 		buf.Write(o1)
 	}
 	return buf.String(), nil
+}
+
+func (h *hookTemplate) getXCache(p *HookParam) *xcache.FileCache {
+	var dir string
+	if ae, ok := p.Configure.(fsenv.HasAppEnv); ok {
+		dir = filepath.Join(ae.AppEnv().DataRootDir(), "fsconf_cache")
+	} else {
+		dir = filepath.Join(os.TempDir(), "fsconf_cache")
+	}
+	return &xcache.FileCache{
+		Dir: dir,
+	}
+}
+
+func (h *hookTemplate) fnFetch(ctx context.Context, p *HookParam, tp map[string]string, api string, ps []string) (string, error) {
+	if len(api) == 0 {
+		return "", errors.New("url is required")
+	}
+	if len(ps) > 1 {
+		return "", errors.New("only support 0 or 1 param")
+	}
+
+	timeout := 3 * time.Second
+	var cacheTTL time.Duration
+	if len(ps) == 1 {
+		param, err := xcache.ParserParam(ps[0])
+		if err != nil {
+			return "", err
+		}
+		if param.Timeout > 0 {
+			timeout = param.Timeout
+		}
+		cacheTTL = param.TTL
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	bf, err := httpFetch(ctx, api)
+
+	if cacheTTL > 0 {
+		fc := h.getXCache(p)
+		if err == nil {
+			fc.Set(api, bf)
+		} else {
+			if cv, ok := fc.Get(api, cacheTTL); ok {
+				return string(cv), nil
+			}
+		}
+	}
+
+	return string(bf), err
+}
+
+func httpFetch(ctx context.Context, api string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, api, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
