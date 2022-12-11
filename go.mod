@@ -3,10 +3,10 @@ module github.com/fsgo/fsconf
 go 1.19
 
 require (
-	github.com/BurntSushi/toml v1.2.0
-	github.com/fsgo/fsenv v0.3.0
+	github.com/BurntSushi/toml v1.2.1
+	github.com/fsgo/fsenv v0.3.1
 	github.com/go-playground/validator/v10 v10.11.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
