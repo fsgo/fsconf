@@ -6,6 +6,7 @@ package fsconf
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -106,18 +107,30 @@ func (c *confImpl) confFileAbsPath(confName string) (string, error) {
 
 func (c *confImpl) ParseByAbsPath(confAbsPath string, obj any) (err error) {
 	if len(c.parsers) == 0 {
-		return fmt.Errorf("no parser")
+		return errors.New("no parser")
 	}
 
 	return c.readConfDirect(confAbsPath, obj)
 }
 
 func (c *confImpl) readConfDirect(confPath string, obj any) error {
+	fileExt := filepath.Ext(confPath)
 	content, errIO := os.ReadFile(confPath)
+	if errIO != nil {
+		if !os.IsNotExist(errIO) {
+			return errIO
+		}
+		for ext := range c.parsers {
+			content, errIO = os.ReadFile(confPath + ext)
+			if errIO == nil {
+				fileExt = ext
+				break
+			}
+		}
+	}
 	if errIO != nil {
 		return errIO
 	}
-	fileExt := filepath.Ext(confPath)
 	return c.parseBytes(confPath, fileExt, content, obj)
 }
 
@@ -171,11 +184,21 @@ func (c *confImpl) Exists(confName string) bool {
 	if err != nil {
 		return false
 	}
+
 	info, err := os.Stat(p)
-	if err != nil {
+	if err == nil && !info.IsDir() {
+		return true
+	}
+	if !os.IsNotExist(err) {
 		return false
 	}
-	return !info.IsDir()
+	for ext := range c.parsers {
+		info1, err1 := os.Stat(p + ext)
+		if err1 == nil && !info1.IsDir() {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {

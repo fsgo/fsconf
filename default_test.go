@@ -43,6 +43,13 @@ func TestExists(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "case 2.1",
+			args: args{
+				confName: "abc",
+			},
+			want: true,
+		},
+		{
 			name: "case 3 relative path",
 			args: args{
 				confName: "./testdata/conf/abc.json",
@@ -101,6 +108,19 @@ func TestParse(t *testing.T) {
 			name: "case 3",
 			args: args{
 				confName: "db1.toml",
+				obj:      map[string]string{},
+			},
+			want: map[string]string{
+				"name":    "abc",
+				"charset": "utf-8",
+				"Port":    "8080",
+			},
+			wantErr: false,
+		},
+		{
+			name: "case 4",
+			args: args{
+				confName: "db1",
 				obj:      map[string]string{},
 			},
 			want: map[string]string{
