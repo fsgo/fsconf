@@ -62,9 +62,9 @@ func New() Configure {
 // 会注册默认的配置解析方法和辅助方法
 func NewDefault() Configure {
 	conf := New()
-	for name, fn := range defaultParsers {
-		if err := conf.RegisterParser(name, fn); err != nil {
-			panic(fmt.Sprintf("RegisterParser(%q) err=%s", name, err))
+	for _, pair := range defaultParsers {
+		if err := conf.RegisterParser(pair.Name, pair.Fn); err != nil {
+			panic(fmt.Sprintf("RegisterParser(%q) err=%s", pair.Name, err))
 		}
 	}
 
@@ -77,10 +77,11 @@ func NewDefault() Configure {
 }
 
 type confImpl struct {
-	ctx      context.Context
-	validate Validator
-	parsers  map[string]ParserFn
-	hooks    hooks
+	ctx        context.Context
+	validate   Validator
+	parsers    map[string]ParserFn
+	parseNames []string
+	hooks      hooks
 	fsenv.WithAppEnv
 }
 
@@ -120,7 +121,7 @@ func (c *confImpl) readConfDirect(confPath string, obj any) error {
 		if !os.IsNotExist(errIO) {
 			return errIO
 		}
-		for ext := range c.parsers {
+		for _, ext := range c.parseNames {
 			content, errIO = os.ReadFile(confPath + ext)
 			if errIO == nil {
 				fileExt = ext
@@ -206,6 +207,7 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 		return fmt.Errorf("parser=%q already exists", fileExt)
 	}
 	c.parsers[fileExt] = fn
+	c.parseNames = append(c.parseNames, fileExt)
 	return nil
 }
 

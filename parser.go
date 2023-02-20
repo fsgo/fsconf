@@ -16,10 +16,16 @@ import (
 // 当前已经内置了 .toml  和 .json的解析方法
 type ParserFn = parser.Fn
 
-// defaultParsers 所有默认的parser
-var defaultParsers = map[string]parser.Fn{
-	parser.FileJSON: parser.JSON,
-	parser.FileTOML: parser.TOML,
-	".xml":          xml.Unmarshal,
-	".yml":          yaml.Unmarshal,
+type parserNameFn struct {
+	Fn   ParserFn
+	Name string
+}
+
+// defaultParsers 所有默认的 parser，
+// 当传入配置文件名不包含后置的时候，会使用此顺序依次查找
+var defaultParsers = []parserNameFn{
+	{Name: parser.FileTOML, Fn: parser.TOML},
+	{Name: parser.FileJSON, Fn: parser.JSON},
+	{Name: ".yml", Fn: yaml.Unmarshal},
+	{Name: ".xml", Fn: xml.Unmarshal},
 }

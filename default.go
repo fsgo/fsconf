@@ -36,8 +36,12 @@ func Exists(confName string) bool {
 // RegisterParser （全局）注册一个解析器
 // fileExt 是文件后缀，如 .json
 func RegisterParser(fileExt string, fn ParserFn) error {
-	defaultParsers[fileExt] = fn
-	return Default.RegisterParser(fileExt, fn)
+	err := Default.RegisterParser(fileExt, fn)
+	if err != nil {
+		return err
+	}
+	defaultParsers = append(defaultParsers, parserNameFn{Name: fileExt, Fn: fn})
+	return nil
 }
 
 // RegisterHelper （全局）注册一个辅助方法
