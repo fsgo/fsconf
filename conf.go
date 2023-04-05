@@ -80,7 +80,7 @@ type confImpl struct {
 	ctx        context.Context
 	validate   Validator
 	parsers    map[string]ParserFn
-	parseNames []string
+	parseNames []string // 支持的文件后缀，如 []string{".json",".toml"}
 	hooks      hooks
 	fsenv.WithAppEnv
 }
@@ -115,16 +115,19 @@ func (c *confImpl) ParseByAbsPath(confAbsPath string, obj any) (err error) {
 }
 
 func (c *confImpl) readConfDirect(confPath string, obj any) error {
+	useName := confPath
 	fileExt := filepath.Ext(confPath)
 	content, errIO := os.ReadFile(confPath)
-	if errIO != nil {
-		if !os.IsNotExist(errIO) {
-			return errIO
-		}
+	// fileExt == "" 是为了兼容存在同名目录的情况
+	if errIO != nil && (os.IsNotExist(errIO) || fileExt == "") && !inSlice(c.parseNames, fileExt) {
+		var err1 error
 		for _, ext := range c.parseNames {
-			content, errIO = os.ReadFile(confPath + ext)
-			if errIO == nil {
+			name1 := confPath + ext
+			content, err1 = os.ReadFile(name1)
+			if err1 == nil {
 				fileExt = ext
+				useName = name1
+				errIO = nil
 				break
 			}
 		}
@@ -132,7 +135,11 @@ func (c *confImpl) readConfDirect(confPath string, obj any) error {
 	if errIO != nil {
 		return errIO
 	}
-	return c.parseBytes(confPath, fileExt, content, obj)
+	err2 := c.parseBytes(useName, fileExt, content, obj)
+	if err2 == nil {
+		return nil
+	}
+	return fmt.Errorf("parser %q failed: %w", useName, err2)
 }
 
 func (c *confImpl) context() context.Context {
@@ -149,7 +156,11 @@ func (c *confImpl) ParseBytes(fileExt string, content []byte, obj any) error {
 func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, obj any) error {
 	parserFn, hasParser := c.parsers[fileExt]
 	if len(fileExt) == 0 || !hasParser {
-		return fmt.Errorf("fileExt %q is not supported yet", fileExt)
+		err1 := fmt.Errorf("fileExt %q is not supported yet", fileExt)
+		if confPath == "" {
+			return err1
+		}
+		return fmt.Errorf("cannot parser %q: %w", confPath, err1)
 	}
 
 	p := &HookParam{
