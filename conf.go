@@ -114,32 +114,48 @@ func (c *confImpl) ParseByAbsPath(confAbsPath string, obj any) (err error) {
 	return c.readConfDirect(confAbsPath, obj)
 }
 
-func (c *confImpl) readConfDirect(confPath string, obj any) error {
-	useName := confPath
+func (c *confImpl) realConfPath(confPath string) (path string, ext string, err error) {
 	fileExt := filepath.Ext(confPath)
-	content, errIO := os.ReadFile(confPath)
+	info, err1 := os.Stat(confPath)
+
+	if err1 == nil && !info.IsDir() {
+		return confPath, fileExt, nil
+	}
+
+	notExist := err1 != nil && os.IsNotExist(err1)
+	isDir := err1 == nil && info.IsDir()
+
 	// fileExt == "" 是为了兼容存在同名目录的情况
-	if errIO != nil && (os.IsNotExist(errIO) || fileExt == "") && !inSlice(c.parseNames, fileExt) {
-		var err1 error
-		for _, ext := range c.parseNames {
-			name1 := confPath + ext
-			content, err1 = os.ReadFile(name1)
-			if err1 == nil {
-				fileExt = ext
-				useName = name1
-				errIO = nil
-				break
+	if (notExist || isDir || fileExt == "") && !inSlice(c.parseNames, fileExt) {
+		for i := 0; i < len(c.parseNames); i++ {
+			ext2 := c.parseNames[i]
+			name2 := confPath + ext2
+			info2, err2 := os.Stat(name2)
+			if err2 == nil && !info2.IsDir() {
+				return name2, ext2, nil
 			}
 		}
 	}
+	if err1 != nil {
+		return "", "", err1
+	}
+	return "", "", fmt.Errorf("cannot get real path for %q", confPath)
+}
+
+func (c *confImpl) readConfDirect(confPath string, obj any) error {
+	realFile, fileExt, err := c.realConfPath(confPath)
+	if err != nil {
+		return err
+	}
+	content, errIO := os.ReadFile(realFile)
 	if errIO != nil {
 		return errIO
 	}
-	err2 := c.parseBytes(useName, fileExt, content, obj)
+	err2 := c.parseBytes(realFile, fileExt, content, obj)
 	if err2 == nil {
 		return nil
 	}
-	return fmt.Errorf("parser %q failed: %w", useName, err2)
+	return fmt.Errorf("parser %q failed: %w", realFile, err2)
 }
 
 func (c *confImpl) context() context.Context {
