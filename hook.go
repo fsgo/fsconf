@@ -6,6 +6,7 @@ package fsconf
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/fsgo/fsconf/internal/hook"
@@ -19,9 +20,10 @@ type Hook interface {
 
 // HookParam param for helper
 type HookParam struct {
-	Configure Configure
-	ConfPath  string
-	Content   []byte
+	FileExt   string    // 文件类型后缀，如 .toml,.json
+	Configure Configure // 当前 Configure 对象
+	ConfPath  string    // 文件路径。当直接解析内容时，为空字符串
+	Content   []byte    // 文件内容
 }
 
 var defaultHooks hooks = []Hook{
@@ -34,7 +36,7 @@ type hooks []Hook
 
 func (hs *hooks) Add(h Hook) error {
 	if len(h.Name()) == 0 {
-		return fmt.Errorf("hook.Name is empty, not allow")
+		return errors.New("hook.Name is empty, not allow")
 	}
 
 	for _, h1 := range *hs {

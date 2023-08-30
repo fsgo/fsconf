@@ -180,6 +180,7 @@ func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, o
 	}
 
 	p := &HookParam{
+		FileExt:   fileExt,
 		Configure: c,
 		ConfPath:  confPath,
 		Content:   content,
