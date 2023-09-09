@@ -25,7 +25,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "RootDir",
 			args: args{
 				key: "RootDir",
-				cf:  Default,
+				cf:  Default(),
 			},
 			want: "./testdata",
 		},
@@ -33,7 +33,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "IDC",
 			args: args{
 				key: "IDC",
-				cf:  Default,
+				cf:  Default(),
 			},
 			want: "test",
 		},
@@ -41,7 +41,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "DataRootDir",
 			args: args{
 				key: "DataRootDir",
-				cf:  Default,
+				cf:  Default(),
 			},
 			want: "testdata/data",
 		},
@@ -49,7 +49,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "ConfRootDir",
 			args: args{
 				key: "ConfRootDir",
-				cf:  Default,
+				cf:  Default(),
 			},
 			want: "testdata/conf",
 		},
@@ -57,7 +57,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "LogRootDir",
 			args: args{
 				key: "LogRootDir",
-				cf:  Default,
+				cf:  Default(),
 			},
 			want: "testdata/log",
 		},
@@ -65,7 +65,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "RunMode",
 			args: args{
 				key: "RunMode",
-				cf:  Default,
+				cf:  Default(),
 			},
 			want: "product",
 		},
@@ -73,7 +73,7 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			name: "other key not support",
 			args: args{
 				key: "other-key",
-				cf:  Default,
+				cf:  Default(),
 			},
 			wantErr: true,
 		},
@@ -108,7 +108,7 @@ func Test_fsEnvHelper_Execute(t *testing.T) {
 		{
 			name: "idc and log dir",
 			args: args{
-				cf:    Default,
+				cf:    Default(),
 				ctx:   context.Background(),
 				input: []byte(`{"idc":"{fsenv.IDC}","logDir":"{fsenv.LogRootDir}"}`),
 			},
@@ -117,7 +117,7 @@ func Test_fsEnvHelper_Execute(t *testing.T) {
 		{
 			name: "not support key",
 			args: args{
-				cf:    Default,
+				cf:    Default(),
 				ctx:   context.Background(),
 				input: []byte(`{"idc":"{fsenv.other}"}`),
 			},

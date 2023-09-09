@@ -23,7 +23,7 @@ func Test_hookInclude_Execute(t *testing.T) {
 		return &HookParam{
 			ConfPath:  fp,
 			Content:   bf,
-			Configure: Default,
+			Configure: Default(),
 		}
 	}
 
