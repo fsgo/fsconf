@@ -21,8 +21,9 @@ func Test_hookInclude_Execute(t *testing.T) {
 			panic(err)
 		}
 		return &HookParam{
-			ConfPath: fp,
-			Content:  bf,
+			ConfPath:  fp,
+			Content:   bf,
+			Configure: Default,
 		}
 	}
 
