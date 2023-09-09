@@ -15,33 +15,6 @@ import (
 	"github.com/fsgo/fsenv"
 )
 
-// Configure 配置解析定义
-type Configure interface {
-	// Parse 读取并解析配置文件
-	// confName ：相对于 conf/ 目录的文件路径
-	// 也支持使用绝对路径
-	Parse(confName string, obj any) error
-
-	// ParseByAbsPath 使用绝对/相对 读取并解析配置文件
-	ParseByAbsPath(confAbsPath string, obj any) error
-
-	// ParseBytes 解析bytes内容
-	ParseBytes(fileExt string, content []byte, obj any) error
-
-	// Exists 配置文件是否存在
-	Exists(confName string) bool
-
-	// RegisterParser 注册一个指定后缀的配置的 parser
-	// 如要添加 .ini 文件的支持，可在此注册对应的解析函数即可
-	RegisterParser(fileExt string, fn ParserFn) error
-
-	// RegisterHook 注册一个辅助方法
-	RegisterHook(h Hook) error
-
-	// WithContext 设置一个 context，并返回新的对象
-	WithContext(ctx context.Context) Configure
-}
-
 // AutoChecker 当配置解析完成后，用于自动校验，
 // 这个方法是在 validator 校验完成之后才执行的
 type AutoChecker interface {
@@ -50,8 +23,8 @@ type AutoChecker interface {
 
 // New 创建一个新的配置解析实例
 // 返回的实例是没有注册任何解析能力的
-func New() Configure {
-	conf := &confImpl{
+func New() *Configure {
+	conf := &Configure{
 		parsers:  map[string]ParserFn{},
 		validate: vv10,
 	}
@@ -60,7 +33,7 @@ func New() Configure {
 
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault() Configure {
+func NewDefault() *Configure {
 	conf := New()
 	for _, pair := range defaultParsers {
 		if err := conf.RegisterParser(pair.Name, pair.Fn); err != nil {
@@ -76,7 +49,7 @@ func NewDefault() Configure {
 	return conf
 }
 
-type confImpl struct {
+type Configure struct {
 	ctx        context.Context
 	validate   Validator
 	parsers    map[string]ParserFn
@@ -85,7 +58,7 @@ type confImpl struct {
 	fsenv.WithAppEnv
 }
 
-func (c *confImpl) Parse(confName string, obj any) (err error) {
+func (c *Configure) Parse(confName string, obj any) (err error) {
 	confAbsPath, err := c.confFileAbsPath(confName)
 	if err != nil {
 		return err
@@ -93,7 +66,7 @@ func (c *confImpl) Parse(confName string, obj any) (err error) {
 	return c.ParseByAbsPath(confAbsPath, obj)
 }
 
-func (c *confImpl) confFileAbsPath(confName string) (string, error) {
+func (c *Configure) confFileAbsPath(confName string) (string, error) {
 	if strings.HasPrefix(confName, "./") {
 		return filepath.Abs(confName)
 	}
@@ -103,10 +76,23 @@ func (c *confImpl) confFileAbsPath(confName string) (string, error) {
 	if filepath.IsAbs(confName) {
 		return confName, nil
 	}
-	return filepath.Join(c.AppEnv().ConfRootDir(), confName), nil
+
+	fp := filepath.Join(c.AppEnv().ConfRootDir(), confName)
+
+	if !fileExists(fp) {
+		if fp1, err := filepath.Abs(confName); err == nil && fileExists(fp1) {
+			return fp1, nil
+		}
+	}
+	return fp, nil
 }
 
-func (c *confImpl) ParseByAbsPath(confAbsPath string, obj any) (err error) {
+func fileExists(fp string) bool {
+	info, err := os.Stat(fp)
+	return err == nil && !info.IsDir()
+}
+
+func (c *Configure) ParseByAbsPath(confAbsPath string, obj any) (err error) {
 	if len(c.parsers) == 0 {
 		return errors.New("no parser")
 	}
@@ -114,7 +100,7 @@ func (c *confImpl) ParseByAbsPath(confAbsPath string, obj any) (err error) {
 	return c.readConfDirect(confAbsPath, obj)
 }
 
-func (c *confImpl) realConfPath(confPath string) (path string, ext string, err error) {
+func (c *Configure) realConfPath(confPath string) (path string, ext string, err error) {
 	fileExt := filepath.Ext(confPath)
 	info, err1 := os.Stat(confPath)
 
@@ -142,7 +128,7 @@ func (c *confImpl) realConfPath(confPath string) (path string, ext string, err e
 	return "", "", fmt.Errorf("cannot get real path for %q", confPath)
 }
 
-func (c *confImpl) readConfDirect(confPath string, obj any) error {
+func (c *Configure) readConfDirect(confPath string, obj any) error {
 	realFile, fileExt, err := c.realConfPath(confPath)
 	if err != nil {
 		return err
@@ -158,18 +144,18 @@ func (c *confImpl) readConfDirect(confPath string, obj any) error {
 	return fmt.Errorf("parser %q failed: %w", realFile, err2)
 }
 
-func (c *confImpl) context() context.Context {
+func (c *Configure) context() context.Context {
 	if c.ctx == nil {
 		return context.Background()
 	}
 	return c.ctx
 }
 
-func (c *confImpl) ParseBytes(fileExt string, content []byte, obj any) error {
+func (c *Configure) ParseBytes(fileExt string, content []byte, obj any) error {
 	return c.parseBytes("", fileExt, content, obj)
 }
 
-func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, obj any) error {
+func (c *Configure) parseBytes(confPath string, fileExt string, content []byte, obj any) error {
 	parserFn, hasParser := c.parsers[fileExt]
 	if len(fileExt) == 0 || !hasParser {
 		err1 := fmt.Errorf("fileExt %q is not supported yet", fileExt)
@@ -208,7 +194,7 @@ func (c *confImpl) parseBytes(confPath string, fileExt string, content []byte, o
 	return nil
 }
 
-func (c *confImpl) Exists(confName string) bool {
+func (c *Configure) Exists(confName string) bool {
 	p, err := c.confFileAbsPath(confName)
 	if err != nil {
 		return false
@@ -230,7 +216,7 @@ func (c *confImpl) Exists(confName string) bool {
 	return false
 }
 
-func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
+func (c *Configure) RegisterParser(fileExt string, fn ParserFn) error {
 	if _, has := c.parsers[fileExt]; has {
 		return fmt.Errorf("parser=%q already exists", fileExt)
 	}
@@ -239,12 +225,12 @@ func (c *confImpl) RegisterParser(fileExt string, fn ParserFn) error {
 	return nil
 }
 
-func (c *confImpl) RegisterHook(h Hook) error {
+func (c *Configure) RegisterHook(h Hook) error {
 	return c.hooks.Add(h)
 }
 
-func (c *confImpl) clone() *confImpl {
-	c1 := &confImpl{
+func (c *Configure) clone() *Configure {
+	c1 := &Configure{
 		parsers: make(map[string]ParserFn, len(c.parsers)),
 	}
 	for n, fn := range c.parsers {
@@ -258,10 +244,8 @@ func (c *confImpl) clone() *confImpl {
 	return c1
 }
 
-func (c *confImpl) WithContext(ctx context.Context) Configure {
+func (c *Configure) WithContext(ctx context.Context) *Configure {
 	c1 := c.clone()
 	c1.ctx = ctx
 	return c1
 }
-
-var _ Configure = (*confImpl)(nil)

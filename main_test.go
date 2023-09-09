@@ -15,5 +15,5 @@ func init() {
 	_ = os.Setenv("Port2", "8081")
 	_ = os.Setenv("APP", "demo.fenji")
 	env := fsenv.NewAppEnv(fsenv.Value{RootDir: "./testdata"})
-	Default.(fsenv.CanSetAppEnv).SetAppEnv(env)
+	Default.SetAppEnv(env)
 }

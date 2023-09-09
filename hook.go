@@ -20,10 +20,10 @@ type Hook interface {
 
 // HookParam param for helper
 type HookParam struct {
-	FileExt   string    // 文件类型后缀，如 .toml,.json
-	Configure Configure // 当前 Configure 对象
-	ConfPath  string    // 文件路径。当直接解析内容时，为空字符串
-	Content   []byte    // 文件内容
+	FileExt   string     // 文件类型后缀，如 .toml,.json
+	Configure *Configure // 当前 Configure 对象
+	ConfPath  string     // 文件路径。当直接解析内容时，为空字符串
+	Content   []byte     // 文件内容
 }
 
 var defaultHooks hooks = []Hook{

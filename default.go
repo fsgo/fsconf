@@ -51,6 +51,6 @@ func RegisterHelper(h Hook) error {
 }
 
 // WithContext （全局）设置一个 context，并返回新的对象
-func WithContext(ctx context.Context) Configure {
+func WithContext(ctx context.Context) *Configure {
 	return Default.WithContext(ctx)
 }

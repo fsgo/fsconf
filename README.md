@@ -38,7 +38,7 @@ RegisterHook(h Helper) error
 ```go
 // NewDefault 创建一个新的配置解析实例
 // 会注册默认的配置解析方法和辅助方法
-func NewDefault() Configure 
+func NewDefault() *Configure 
 ```
 
 若对象实现 `AutoChecker` 接口，当解析完成后会自动调用 `AutoCheck` 方法
@@ -146,7 +146,7 @@ LogFilePath = "{fsenv.LogRootDir}/http/access.log"
 
 
 #### 1. 表达式
-支持使用 template表达式： https://pkg.go.dev/text/template  
+支持使用 template 表达式： https://pkg.go.dev/text/template  
 额外扩展新增了如下函数：
 ```go
 // 包含子文件，支持一个或子目录下多个文件

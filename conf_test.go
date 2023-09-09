@@ -20,7 +20,7 @@ func Test_confImpl(t *testing.T) {
 	env := fsenv.NewAppEnv(fsenv.Value{
 		RootDir: "./testdata",
 	})
-	conf.(fsenv.CanSetAppEnv).SetAppEnv(env)
+	conf.SetAppEnv(env)
 	var a any
 	if err := conf.Parse("abc.json", &a); err == nil {
 		t.Errorf("expect has error")

@@ -18,8 +18,6 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/fsgo/fsenv"
-
 	"github.com/fsgo/fsconf/internal/parser"
 	"github.com/fsgo/fsconf/internal/xcache"
 )
@@ -94,15 +92,14 @@ func (h *hookTemplate) exec(ctx context.Context, hp *HookParam, tp map[string]st
 	}
 	buf := &bytes.Buffer{}
 	data := make(map[string]string, 6)
-	if cae, ok := hp.Configure.(fsenv.HasAppEnv); ok {
-		ce := cae.AppEnv()
-		data["IDC"] = ce.IDC()
-		data["RootDir"] = ce.RootDir()
-		data["ConfRootDir"] = ce.ConfRootDir()
-		data["LogRootDir"] = ce.LogRootDir()
-		data["DataRootDir"] = ce.DataRootDir()
-		data["RunMode"] = string(ce.RunMode())
-	}
+
+	ce := hp.Configure.AppEnv()
+	data["IDC"] = ce.IDC()
+	data["RootDir"] = ce.RootDir()
+	data["ConfRootDir"] = ce.ConfRootDir()
+	data["LogRootDir"] = ce.LogRootDir()
+	data["DataRootDir"] = ce.DataRootDir()
+	data["RunMode"] = string(ce.RunMode())
 
 	if err = tmpl.Execute(buf, data); err != nil {
 		return nil, err
@@ -161,12 +158,7 @@ func (h *hookTemplate) fnInclude(ctx context.Context, name string, p *HookParam,
 }
 
 func (h *hookTemplate) getXCache(p *HookParam) *xcache.FileCache {
-	var dir string
-	if ae, ok := p.Configure.(fsenv.HasAppEnv); ok {
-		dir = filepath.Join(ae.AppEnv().DataRootDir(), "fsconf_cache")
-	} else {
-		dir = filepath.Join(os.TempDir(), "fsconf_cache")
-	}
+	dir := filepath.Join(p.Configure.AppEnv().DataRootDir(), "fsconf_cache")
 	return &xcache.FileCache{
 		Dir: dir,
 	}

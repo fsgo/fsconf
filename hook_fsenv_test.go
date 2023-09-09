@@ -13,7 +13,7 @@ import (
 func Test_fsEnvHelper_getValue(t *testing.T) {
 	type args struct {
 		key string
-		cf  Configure
+		cf  *Configure
 	}
 	tests := []struct {
 		name    string
@@ -77,14 +77,6 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "cf not support",
-			args: args{
-				key: "RunMode",
-				cf:  &testCfNoEnv{},
-			},
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -101,43 +93,10 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 	}
 }
 
-var _ Configure = (*testCfNoEnv)(nil)
-
-type testCfNoEnv struct {
-}
-
-func (t *testCfNoEnv) Parse(confName string, obj any) error {
-	return nil
-}
-
-func (t *testCfNoEnv) ParseByAbsPath(confAbsPath string, obj any) error {
-	return nil
-}
-
-func (t *testCfNoEnv) ParseBytes(fileExt string, content []byte, obj any) error {
-	return nil
-}
-
-func (t *testCfNoEnv) Exists(confName string) bool {
-	return false
-}
-
-func (t *testCfNoEnv) RegisterParser(fileExt string, fn ParserFn) error {
-	return nil
-}
-
-func (t *testCfNoEnv) RegisterHook(h Hook) error {
-	return nil
-}
-
-func (t *testCfNoEnv) WithContext(ctx context.Context) Configure {
-	return nil
-}
-
 func Test_fsEnvHelper_Execute(t *testing.T) {
 	type args struct {
 		ctx   context.Context
-		cf    Configure
+		cf    *Configure
 		input []byte
 	}
 	tests := []struct {

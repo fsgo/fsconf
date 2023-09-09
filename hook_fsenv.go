@@ -8,8 +8,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-
-	"github.com/fsgo/fsenv"
 )
 
 var _ Hook = (*hookFsEnv)(nil)
@@ -40,12 +38,8 @@ func (f *hookFsEnv) Execute(ctx context.Context, p *HookParam) (output []byte, e
 	return contentNew, err
 }
 
-func (f *hookFsEnv) getValue(key string, cf Configure) (string, error) {
-	cae, ok := cf.(fsenv.HasAppEnv)
-	if !ok {
-		return "", fmt.Errorf("cannot get appenv")
-	}
-	ae := cae.AppEnv()
+func (f *hookFsEnv) getValue(key string, cf *Configure) (string, error) {
+	ae := cf.AppEnv()
 
 	var value string
 	switch key {
