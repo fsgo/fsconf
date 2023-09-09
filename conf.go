@@ -225,13 +225,22 @@ func (c *Configure) RegisterParser(fileExt string, fn ParserFn) error {
 	return nil
 }
 
+// RegisterHook 注册新的 Hook，若出现重名会注册失败
 func (c *Configure) RegisterHook(h Hook) error {
 	return c.hooks.Add(h)
 }
 
-func (c *Configure) clone() *Configure {
+// MustRegisterHook 注册新的 Hook, 若失败会 panic
+func (c *Configure) MustRegisterHook(h Hook) {
+	if err := c.hooks.Add(h); err != nil {
+		panic(err)
+	}
+}
+
+func (c *Configure) Clone() *Configure {
 	c1 := &Configure{
-		parsers: make(map[string]ParserFn, len(c.parsers)),
+		parsers:  make(map[string]ParserFn, len(c.parsers)),
+		validate: c.validate,
 	}
 	for n, fn := range c.parsers {
 		c1.parsers[n] = fn
@@ -245,7 +254,15 @@ func (c *Configure) clone() *Configure {
 }
 
 func (c *Configure) WithContext(ctx context.Context) *Configure {
-	c1 := c.clone()
+	c1 := c.Clone()
 	c1.ctx = ctx
+	return c1
+}
+
+func (c *Configure) WithHook(hs ...Hook) *Configure {
+	c1 := c.Clone()
+	for _, h := range hs {
+		c1.MustRegisterHook(h)
+	}
 	return c1
 }

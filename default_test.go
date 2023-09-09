@@ -192,7 +192,7 @@ func TestParseByAbsPath(t *testing.T) {
 	}
 }
 
-func TestRegisterHelper(t *testing.T) {
+func TestRegisterHook(t *testing.T) {
 	type args struct {
 		name string
 		fn   hook.Fn
@@ -230,7 +230,7 @@ func TestRegisterHelper(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			h := newHook(tt.args.name, tt.args.fn)
-			if err := RegisterHelper(h); (err != nil) != tt.wantErr {
+			if err := RegisterHook(h); (err != nil) != tt.wantErr {
 				t.Errorf("RegisterInterceptor() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

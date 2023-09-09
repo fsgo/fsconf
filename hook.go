@@ -12,13 +12,17 @@ import (
 	"github.com/fsgo/fsconf/internal/hook"
 )
 
-// Hook 辅助方法，在执行解析前，会先会配置的内容进行解析处理
+// Hook 辅助类，在执行解析前，会先会配置的内容进行解析处理
 type Hook interface {
+	// Name 名称，不可为空
+	// 每个 Hook 应返回唯一的名称，若重名会注册失败
 	Name() string
+
+	// Execute 对读取的配置内容加工的逻辑
 	Execute(ctx context.Context, p *HookParam) (output []byte, err error)
 }
 
-// HookParam param for helper
+// HookParam param for Hook
 type HookParam struct {
 	FileExt   string     // 文件类型后缀，如 .toml,.json
 	Configure *Configure // 当前 Configure 对象

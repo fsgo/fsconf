@@ -57,13 +57,27 @@ func RegisterParser(fileExt string, fn ParserFn) error {
 	return nil
 }
 
-// RegisterHelper （全局）注册一个辅助方法
-func RegisterHelper(h Hook) error {
-	_ = defaultHooks.Add(h)
+// RegisterHook （全局）注册一个辅助类
+func RegisterHook(h Hook) error {
+	if err := defaultHooks.Add(h); err != nil {
+		return err
+	}
 	return Default().RegisterHook(h)
 }
 
-// WithContext （全局）设置一个 context，并返回新的对象
+// MustRegisterHook （全局）注册一个辅助类，若失败会 panic
+func MustRegisterHook(h Hook) {
+	if err := RegisterHook(h); err != nil {
+		panic(err)
+	}
+}
+
+// WithContext （全局）返回新的对象,并设置新的 ctx
 func WithContext(ctx context.Context) *Configure {
 	return Default().WithContext(ctx)
+}
+
+// WithHook （全局）返回新的对象,并注册 Hook
+func WithHook(hs ...Hook) *Configure {
+	return Default().WithHook(hs...)
 }
