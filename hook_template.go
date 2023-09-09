@@ -37,7 +37,7 @@ func (h *hookTemplate) Execute(ctx context.Context, hp *HookParam) (output []byt
 	if len(cmts) == 0 {
 		return hp.Content, nil
 	}
-	params := make(map[string]string)
+	params := make(map[string]string, 3)
 	for _, cmt := range cmts {
 		if strings.HasPrefix(cmt, hookTplPrefix) {
 			arr := strings.Fields(cmt[len(hookTplPrefix):])
@@ -91,15 +91,17 @@ func (h *hookTemplate) exec(ctx context.Context, hp *HookParam, tp map[string]st
 		return nil, err
 	}
 	buf := &bytes.Buffer{}
-	data := make(map[string]string, 6)
 
 	ce := hp.Configure.AppEnv()
-	data["IDC"] = ce.IDC()
-	data["RootDir"] = ce.RootDir()
-	data["ConfRootDir"] = ce.ConfRootDir()
-	data["LogRootDir"] = ce.LogRootDir()
-	data["DataRootDir"] = ce.DataRootDir()
-	data["RunMode"] = string(ce.RunMode())
+
+	data := map[string]string{
+		"IDC":         ce.IDC(),
+		"RootDir":     ce.RootDir(),
+		"ConfRootDir": ce.ConfRootDir(),
+		"LogRootDir":  ce.LogRootDir(),
+		"DataRootDir": ce.DataRootDir(),
+		"RunMode":     string(ce.RunMode()),
+	}
 
 	if err = tmpl.Execute(buf, data); err != nil {
 		return nil, err

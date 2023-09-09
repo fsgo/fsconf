@@ -22,17 +22,10 @@ func Test_confImpl(t *testing.T) {
 	})
 	conf.SetAppEnv(env)
 	var a any
-	if err := conf.Parse("abc.json", &a); err == nil {
-		t.Errorf("expect has error")
-	}
-
-	if err := conf.RegisterParser(parser.FileJSON, parser.JSON); err != nil {
-		t.Fatalf("RegisterParser got error %v", err)
-	}
-
-	if err := conf.Parse("abc.xyz", &a); err == nil {
-		t.Errorf("expect has error 2")
-	}
+	require.Error(t, conf.Parse("abc.json", &a))
+	require.NoError(t, conf.RegisterParser(parser.FileJSON, parser.JSON))
+	require.Error(t, conf.Parse("abc.xyz", &a))
+	require.NoError(t, conf.Parse("testdata/db10.json", &a))
 }
 
 func TestNewDefault1(t *testing.T) {
