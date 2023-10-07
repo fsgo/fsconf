@@ -5,8 +5,6 @@
 所有以 "#" 开头的行都将认为是注释。
 
 
-[![Build Status](https://travis-ci.org/fsgo/fsconf.png?branch=master)](https://travis-ci.org/fsgo/fsconf)
-[![GoCover](https://gocover.io/_badge/github.com/fsgo/fsconf)](https://gocover.io/github.com/fsgo/fsconf)
 [![GoDoc](https://godoc.org/github.com/fsgo/fsconf?status.svg)](https://godoc.org/github.com/fsgo/fsconf)
 
 
@@ -118,7 +116,7 @@ conf.Parse("abc.json",&confData)
 
 ### 4.3 .json格式配置
 配置注释：每行以`#`开头的是注释，在解析时会忽略掉，如：
-```javascript
+```json
 {
     "ID": 1
 #这是注释
@@ -175,17 +173,17 @@ LogFilePath = "{fsenv.LogRootDir}/http/access.log"
 
 内置如下变量：
 ```go
-data["IDC"] = ce.IDC()
-data["RootDir"] = ce.RootDir()
-data["ConfRootDir"] = ce.ConfRootDir()
-data["LogRootDir"] = ce.LogRootDir()
-data["DataRootDir"] = ce.DataRootDir()
-data["RunMode"] = string(ce.RunMode())
+data["IDC"]          = ce.IDC()
+data["RootDir"]      = ce.RootDir()
+data["ConfRootDir"]  = ce.ConfRootDir()
+data["LogRootDir"]   = ce.LogRootDir()
+data["DataRootDir"]  = ce.DataRootDir()
+data["RunMode"]      = string(ce.RunMode())
 ```
 
 #### 2. 示例
 如 a.toml 文件内容：
-```
+```toml
 # hook.template  Enable=true
 A="123"
 

@@ -7,7 +7,7 @@ package fsconf
 import (
 	"bytes"
 	"context"
-	"fmt"
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestHelpersExecute(t *testing.T) {
 	var hs hooks
 	_ = hs.Add(newHook("no_d", func(cfPath string, confContent []byte) ([]byte, error) {
 		if bytes.Contains(confContent, []byte("error")) {
-			return nil, fmt.Errorf("must error")
+			return nil, errors.New("must error")
 		}
 		return bytes.ReplaceAll(confContent, []byte("d"), []byte("")), nil
 	}))
