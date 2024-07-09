@@ -11,7 +11,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func Test_hookInclude_Execute(t *testing.T) {
@@ -102,7 +102,7 @@ Z="z"
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			require.Equal(t, string(tt.wantOutput), string(gotOutput))
+			fst.Equal(t, string(tt.wantOutput), string(gotOutput))
 		})
 	}
 }
@@ -122,13 +122,13 @@ K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
 `
 		mp := map[string]string{}
 		err1 := ParseBytes(".toml", []byte(txt), &mp)
-		require.NoError(t, err1)
+		fst.NoError(t, err1)
 		want1 := map[string]string{
 			"K1": "hello-k1",
 			"K2": "hello-k2",
 			"K3": "hello-k3",
 		}
-		require.Equal(t, want1, mp)
+		fst.Equal(t, want1, mp)
 	})
 
 	t.Run("server unreachable", func(t *testing.T) {
@@ -138,10 +138,10 @@ K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
 `
 		mp := map[string]string{}
 		err1 := ParseBytes(".toml", []byte(txt), &mp)
-		require.NoError(t, err1)
+		fst.NoError(t, err1)
 		want1 := map[string]string{
 			"K3": "hello-k3",
 		}
-		require.Equal(t, want1, mp)
+		fst.Equal(t, want1, mp)
 	})
 }

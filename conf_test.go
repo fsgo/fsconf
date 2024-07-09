@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/fsgo/fsenv"
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 
 	"github.com/fsgo/fsconf/internal/hook"
 	"github.com/fsgo/fsconf/internal/parser"
@@ -22,10 +22,10 @@ func Test_confImpl(t *testing.T) {
 	})
 	conf.SetAppEnv(env)
 	var a any
-	require.Error(t, conf.Parse("abc.json", &a))
-	require.NoError(t, conf.RegisterParser(parser.FileJSON, parser.JSON))
-	require.Error(t, conf.Parse("abc.xyz", &a))
-	require.NoError(t, conf.Parse("testdata/db10.json", &a))
+	fst.Error(t, conf.Parse("abc.json", &a))
+	fst.NoError(t, conf.RegisterParser(parser.FileJSON, parser.JSON))
+	fst.Error(t, conf.Parse("abc.xyz", &a))
+	fst.NoError(t, conf.Parse("testdata/db10.json", &a))
 }
 
 func TestNewDefault1(t *testing.T) {
@@ -97,42 +97,42 @@ func Test_confImpl_ParseBytes(t *testing.T) {
 	t.Run("validator-1", func(t *testing.T) {
 		var u *user
 		err := ParseBytes(".json", []byte(`{"Age":12}`), &u)
-		require.Equal(t, &user{Age: 12}, u)
-		require.Error(t, err)
+		fst.Equal(t, &user{Age: 12}, u)
+		fst.Error(t, err)
 	})
 
 	t.Run("validator-2", func(t *testing.T) {
 		var u *user
 		err := ParseBytes(".json", []byte(``), &u)
-		require.Nil(t, u)
-		require.Error(t, err)
+		fst.Nil(t, u)
+		fst.Error(t, err)
 	})
 
 	t.Run("validator-3", func(t *testing.T) {
 		var u *user
 		err := ParseBytes(".json", []byte(`{"Age":12,"Name":""}`), &u)
-		require.Equal(t, &user{Age: 12}, u)
-		require.Error(t, err)
+		fst.Equal(t, &user{Age: 12}, u)
+		fst.Error(t, err)
 	})
 
 	t.Run("validator-4", func(t *testing.T) {
 		var u *user
 		err := ParseBytes(".json", []byte(`{"Age":12,"Name":"hello"}`), &u)
-		require.Equal(t, &user{Age: 12, Name: "hello"}, u)
-		require.NoError(t, err)
+		fst.Equal(t, &user{Age: 12, Name: "hello"}, u)
+		fst.NoError(t, err)
 	})
 
 	t.Run("validator-5", func(t *testing.T) {
 		u := &user{}
 		err := ParseBytes(".json", []byte(`{"Age":12,"Name":"hello"}`), u)
-		require.Equal(t, &user{Age: 12, Name: "hello"}, u)
-		require.NoError(t, err)
+		fst.Equal(t, &user{Age: 12, Name: "hello"}, u)
+		fst.NoError(t, err)
 	})
 
 	t.Run("validator-6", func(t *testing.T) {
 		u := &user{}
 		err := ParseBytes(".json", []byte(`{"Age":12,"Name":""}`), u)
-		require.Equal(t, &user{Age: 12}, u)
-		require.Error(t, err)
+		fst.Equal(t, &user{Age: 12}, u)
+		fst.Error(t, err)
 	})
 }

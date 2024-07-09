@@ -7,7 +7,7 @@ package fsconf_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 
 	"github.com/fsgo/fsconf"
 )
@@ -27,16 +27,16 @@ func TestHookTPL_Execute(t *testing.T) {
 `
 		data1 := map[string]string{}
 		err := c1.ParseBytes(".toml", []byte(content1), &data1)
-		require.NoError(t, err)
+		fst.NoError(t, err)
 		want1 := map[string]string{"K1": "v1"}
-		require.Equal(t, want1, data1)
+		fst.Equal(t, want1, data1)
 
 		content2 := `
  K1="{t1.k2}"
 `
 		data2 := map[string]string{}
 		err2 := c1.ParseBytes(".toml", []byte(content2), &data2)
-		require.Error(t, err2)
-		require.Empty(t, data2)
+		fst.Error(t, err2)
+		fst.Empty(t, data2)
 	})
 }

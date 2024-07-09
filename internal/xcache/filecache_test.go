@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func TestFileCache_Get(t *testing.T) {
@@ -19,10 +19,10 @@ func TestFileCache_Get(t *testing.T) {
 	val1 := []byte("hello")
 	fc.Set("k1", val1)
 	got1, ok1 := fc.Get("k1", 0)
-	require.True(t, ok1)
-	require.Equal(t, string(val1), string(got1))
+	fst.True(t, ok1)
+	fst.Equal(t, string(val1), string(got1))
 
 	got1, ok1 = fc.Get("k1", time.Hour)
-	require.True(t, ok1)
-	require.Equal(t, string(val1), string(got1))
+	fst.True(t, ok1)
+	fst.Equal(t, string(val1), string(got1))
 }
