@@ -4,11 +4,11 @@
 
 package fsconf
 
-import (
-	"reflect"
-
-	"github.com/go-playground/validator/v10"
-)
+// AutoChecker 当配置解析完成后，用于自动校验，
+// 这个方法是在 validator 校验完成之后才执行的
+type AutoChecker interface {
+	AutoCheck() error
+}
 
 // Validator 自动规则校验器
 //
@@ -25,43 +25,4 @@ type Validator interface {
 	Validate(val any) error
 }
 
-var _ Validator = (*validatorV10)(nil)
-
-var vv10 = newValidatorV10()
-
-func newValidatorV10() *validatorV10 {
-	return &validatorV10{
-		vv: validator.New(),
-	}
-}
-
-type validatorV10 struct {
-	vv *validator.Validate
-}
-
-func (v *validatorV10) Validate(val any) error {
-	if v.vv == nil {
-		return nil
-	}
-	rv := reflect.ValueOf(val)
-	switch rv.Kind() {
-	case reflect.Struct:
-		return v.vv.Struct(val)
-	case reflect.Ptr:
-		rvv := rv.Elem()
-		switch rvv.Kind() {
-		case reflect.Ptr:
-			return v.vv.Struct(rvv.Interface())
-		case reflect.Struct:
-			return v.vv.Struct(val)
-		}
-	}
-	return nil
-}
-
-// SetupValidatorV10  配置默认的 validator
-//
-// 若是有扩展 validator，可以通过这个方法进行设置
-func SetupValidatorV10(fn func(v10 *validator.Validate)) {
-	fn(vv10.vv)
-}
+var DefaultValidator Validator

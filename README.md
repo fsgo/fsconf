@@ -1,11 +1,11 @@
 # fsconf
 ## 1.功能概述
-一个可扩展的、简单的配置读取库，目前支持`.json`、`.toml`、`.xml`、`.yml`文件的配置。  
+一个可扩展的、简单的配置读取库，默认支持 `.json`、`.xml` 的配置。  
 
 所有以 "#" 开头的行都将认为是注释。
 
 
-[![GoDoc](https://godoc.org/github.com/fsgo/fsconf?status.svg)](https://godoc.org/github.com/fsgo/fsconf)
+[![GoDoc](https://pkg.go.dev/badge/github.com/fsgo/fsconf?utm_source=godoc)](https://godoc.org/github.com/fsgo/fsconf)
 
 
 ## 2.对外接口
@@ -47,9 +47,6 @@ type AutoChecker interface {
 }
 ```
 
-除此之外，若解析成是 Struct，会自动使用 [github.com/go-playground/validator/v10](https://github.com/go-playground/validator)
-对自动进行校验
-
 ## 3.使用示例
 
 ```go
@@ -89,7 +86,22 @@ func main() {
 
 ## 4.特性说明
 
-###  4.1 hook:从系统环境变量读取变量
+###  4.1  扩展能力
+为了减少依赖，默认只支持 `.json`、`.xml` 后缀格式的文件解析，`.toml`、`.yml`文件格式的支持放在单独的子 module 中。
+同时默认的 Validator 也未初始化，即默认为 nil。 
+若需要使用，可以导入 confext 子模块：
+```go
+import "github.com/fsgo/fsconf/confext"
+
+func init(){
+	confext.Init()
+}
+```
+
+导入后，默认的 Validator 会被替换为 [github.com/go-playground/validator/v10](https://github.com/go-playground/validator)
+
+
+###  4.2 hook:从系统环境变量读取变量
 配置内容：
 ```toml
 # 若环境变量里有 server_port，而且不为空，则使用环境变量的值，否则使用默认值8080
@@ -103,7 +115,7 @@ export  server_port=80
 go run main.go
 ```
 
-### 4.2 设置配置读取路径
+### 4.3 设置配置读取路径
 考虑到不同子模块读取配置的目录可能不同，允许让模块自己设置读取配置文件的根目录。
 ```go
 conf:=fsconf.NewDefault()
@@ -114,7 +126,7 @@ var confData map[string]string
 conf.Parse("abc.json",&confData)
 ```
 
-### 4.3 .json格式配置
+### 4.4 .json 格式配置
 配置注释：每行以`#`开头的是注释，在解析时会忽略掉，如：
 ```json
 {
@@ -125,7 +137,7 @@ conf.Parse("abc.json",&confData)
 ```
 
 
-###  4.4 hook:从 appenv 读取变量
+###  4.5 hook:从 appenv 读取变量
 ```toml
 # 补充上 app 的log 目录的路径
 LogFilePath = "{fsenv.LogRootDir}/http/access.log"
@@ -136,7 +148,7 @@ LogFilePath = "{fsenv.LogRootDir}/http/access.log"
 `{fsenv.ConfRootDir}`、`{fsenv.LogRootDir}`、`{fsenv.RunMode}` 。
 不支持其他的 key，否则将报错
 
-###  4.5 hook:使用 template 能力
+###  4.6 hook:使用 template 能力
 该功能默认不开启，需要在文件头部以注释形式声明启用。
 ```toml
 # hook.template  Enable=true

@@ -23,19 +23,23 @@ func TestHookTPL_Execute(t *testing.T) {
 		}
 		c1 := fsconf.WithHook(h1)
 		content1 := `
- K1="{t1.k1}"
+{
+  "K1" : "{t1.k1}"
+}
 `
 		data1 := map[string]string{}
-		err := c1.ParseBytes(".toml", []byte(content1), &data1)
+		err := c1.ParseBytes(".json", []byte(content1), &data1)
 		fst.NoError(t, err)
 		want1 := map[string]string{"K1": "v1"}
 		fst.Equal(t, want1, data1)
 
 		content2 := `
- K1="{t1.k2}"
+{
+  "K1" : "{t1.k2}"
+}
 `
 		data2 := map[string]string{}
-		err2 := c1.ParseBytes(".toml", []byte(content2), &data2)
+		err2 := c1.ParseBytes(".json", []byte(content2), &data2)
 		fst.Error(t, err2)
 		fst.Empty(t, data2)
 	})

@@ -6,8 +6,10 @@ package fsconf
 
 import (
 	"context"
-	"reflect"
 	"testing"
+
+	"github.com/fsgo/fsenv"
+	"github.com/fsgo/fst"
 )
 
 func Test_fsEnvHelper_getValue(t *testing.T) {
@@ -35,28 +37,28 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 				key: "IDC",
 				cf:  Default(),
 			},
-			want: "test",
+			want: fsenv.IDCOnline,
 		},
 		{
-			name: "DataRootDir",
+			name: "DataDir",
 			args: args{
-				key: "DataRootDir",
+				key: "DataDir",
 				cf:  Default(),
 			},
 			want: "testdata/data",
 		},
 		{
-			name: "ConfRootDir",
+			name: "ConfDir",
 			args: args{
-				key: "ConfRootDir",
+				key: "ConfDir",
 				cf:  Default(),
 			},
 			want: "testdata/conf",
 		},
 		{
-			name: "LogRootDir",
+			name: "LogDir",
 			args: args{
-				key: "LogRootDir",
+				key: "LogDir",
 				cf:  Default(),
 			},
 			want: "testdata/log",
@@ -86,8 +88,8 @@ func Test_fsEnvHelper_getValue(t *testing.T) {
 				t.Errorf("getValue() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("getValue() got = %v, want %v", got, tt.want)
+			if !tt.wantErr {
+				fst.Equal(t, tt.want, got)
 			}
 		})
 	}
@@ -110,9 +112,9 @@ func Test_fsEnvHelper_Execute(t *testing.T) {
 			args: args{
 				cf:    Default(),
 				ctx:   context.Background(),
-				input: []byte(`{"idc":"{fsenv.IDC}","logDir":"{fsenv.LogRootDir}"}`),
+				input: []byte(`{"idc":"{fsenv.IDC}","logDir":"{fsenv.LogDir}"}`),
 			},
-			wantOutput: []byte(`{"idc":"test","logDir":"testdata/log"}`),
+			wantOutput: []byte(`{"idc":"online","logDir":"testdata/log"}`),
 		},
 		{
 			name: "not support key",
@@ -136,8 +138,8 @@ func Test_fsEnvHelper_Execute(t *testing.T) {
 				t.Errorf("Execute() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotOutput, tt.wantOutput) {
-				t.Errorf("Execute() gotOutput = %v, want %v", gotOutput, tt.wantOutput)
+			if !tt.wantErr {
+				fst.Equal(t, string(tt.wantOutput), string(gotOutput))
 			}
 		})
 	}

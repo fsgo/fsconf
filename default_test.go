@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/fsgo/fst"
+
 	"github.com/fsgo/fsconf/internal/hook"
 	"github.com/fsgo/fsconf/internal/parser"
 )
@@ -110,12 +112,7 @@ func TestParse(t *testing.T) {
 				confName: "db1.toml",
 				obj:      map[string]string{},
 			},
-			want: map[string]string{
-				"name":    "abc",
-				"charset": "utf-8",
-				"Port":    "8080",
-			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "case 4",
@@ -123,12 +120,7 @@ func TestParse(t *testing.T) {
 				confName: "db1",
 				obj:      map[string]string{},
 			},
-			want: map[string]string{
-				"name":    "abc",
-				"charset": "utf-8",
-				"Port":    "8080",
-			},
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name: "case 5",
@@ -136,10 +128,7 @@ func TestParse(t *testing.T) {
 				confName: "db2", // 存在同名目录的情况
 				obj:      map[string]string{},
 			},
-			want: map[string]string{
-				"name": "abc",
-			},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
@@ -148,9 +137,8 @@ func TestParse(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Parse() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			got := tt.args.obj
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Parse() got=%v want=%v", got, tt.want)
+			if !tt.wantErr {
+				fst.Equal(t, tt.want, tt.args.obj)
 			}
 		})
 	}
@@ -240,7 +228,7 @@ func TestRegisterHook(t *testing.T) {
 func TestRegisterParser(t *testing.T) {
 	type args struct {
 		fileExt string
-		fn      ParserFn
+		fn      DecoderFunc
 	}
 	tests := []struct {
 		name    string

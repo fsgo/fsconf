@@ -17,5 +17,3 @@ func JSON(txt []byte, obj any) error {
 	dec.UseNumber()
 	return dec.Decode(obj)
 }
-
-var _ Fn = JSON

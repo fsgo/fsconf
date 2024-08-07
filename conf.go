@@ -15,20 +15,12 @@ import (
 	"github.com/fsgo/fsenv"
 )
 
-// AutoChecker 当配置解析完成后，用于自动校验，
-// 这个方法是在 validator 校验完成之后才执行的
-type AutoChecker interface {
-	AutoCheck() error
-}
-
 // New 创建一个新的配置解析实例
 // 返回的实例是没有注册任何解析能力的
 func New() *Configure {
-	conf := &Configure{
-		parsers:  map[string]ParserFn{},
-		validate: vv10,
+	return &Configure{
+		parsers: map[string]DecoderFunc{},
 	}
-	return conf
 }
 
 // NewDefault 创建一个新的配置解析实例
@@ -52,10 +44,9 @@ func NewDefault() *Configure {
 type Configure struct {
 	ctx        context.Context
 	validate   Validator
-	parsers    map[string]ParserFn
+	parsers    map[string]DecoderFunc
 	parseNames []string // 支持的文件后缀，如 []string{".json",".toml"}
 	hooks      hooks
-	fsenv.WithAppEnv
 }
 
 func (c *Configure) Parse(confName string, obj any) (err error) {
@@ -77,7 +68,7 @@ func (c *Configure) confFileAbsPath(confName string) (string, error) {
 		return confName, nil
 	}
 
-	fp := filepath.Join(c.AppEnv().ConfRootDir(), confName)
+	fp := filepath.Join(fsenv.ConfDir(), confName)
 
 	if !fileExists(fp) {
 		if fp1, err := filepath.Abs(confName); err == nil && fileExists(fp1) {
@@ -182,8 +173,10 @@ func (c *Configure) parseBytes(confPath string, fileExt string, content []byte, 
 		return fmt.Errorf("%w, config content=\n%s", errParser, string(contentNew))
 	}
 
-	if err := c.validate.Validate(obj); err != nil {
-		return err
+	if vd := c.getValidator(); vd != nil {
+		if err := vd.Validate(obj); err != nil {
+			return err
+		}
 	}
 
 	if ac, ok := obj.(AutoChecker); ok {
@@ -192,6 +185,13 @@ func (c *Configure) parseBytes(confPath string, fileExt string, content []byte, 
 		}
 	}
 	return nil
+}
+
+func (c *Configure) getValidator() Validator {
+	if c.validate != nil {
+		return c.validate
+	}
+	return DefaultValidator
 }
 
 func (c *Configure) Exists(confName string) bool {
@@ -216,7 +216,7 @@ func (c *Configure) Exists(confName string) bool {
 	return false
 }
 
-func (c *Configure) RegisterParser(fileExt string, fn ParserFn) error {
+func (c *Configure) RegisterParser(fileExt string, fn DecoderFunc) error {
 	if _, has := c.parsers[fileExt]; has {
 		return fmt.Errorf("parser=%q already exists", fileExt)
 	}
@@ -239,17 +239,13 @@ func (c *Configure) MustRegisterHook(h Hook) {
 
 func (c *Configure) Clone() *Configure {
 	c1 := &Configure{
-		parsers:  make(map[string]ParserFn, len(c.parsers)),
+		parsers:  make(map[string]DecoderFunc, len(c.parsers)),
 		validate: c.validate,
 	}
 	for n, fn := range c.parsers {
 		c1.parsers[n] = fn
 	}
 	c1.hooks = append([]Hook{}, c.hooks...)
-
-	if env := c.AppEnv(); env != fsenv.Default {
-		c1.SetAppEnv(env)
-	}
 	return c1
 }
 

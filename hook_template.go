@@ -18,6 +18,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/fsgo/fsenv"
+
 	"github.com/fsgo/fsconf/internal/parser"
 	"github.com/fsgo/fsconf/internal/xcache"
 )
@@ -92,15 +94,13 @@ func (h *hookTemplate) exec(ctx context.Context, hp *HookParam, tp map[string]st
 	}
 	buf := &bytes.Buffer{}
 
-	ce := hp.Configure.AppEnv()
-
 	data := map[string]string{
-		"IDC":         ce.IDC(),
-		"RootDir":     ce.RootDir(),
-		"ConfRootDir": ce.ConfRootDir(),
-		"LogRootDir":  ce.LogRootDir(),
-		"DataRootDir": ce.DataRootDir(),
-		"RunMode":     string(ce.RunMode()),
+		"IDC":         fsenv.IDC(),
+		"RootDir":     fsenv.RootDir(),
+		"ConfRootDir": fsenv.ConfDir(),
+		"LogRootDir":  fsenv.LogDir(),
+		"DataRootDir": fsenv.DataDir(),
+		"RunMode":     fsenv.RunMode().String(),
 	}
 
 	if err = tmpl.Execute(buf, data); err != nil {
@@ -160,7 +160,7 @@ func (h *hookTemplate) fnInclude(ctx context.Context, name string, p *HookParam,
 }
 
 func (h *hookTemplate) getXCache(p *HookParam) *xcache.FileCache {
-	dir := filepath.Join(p.Configure.AppEnv().DataRootDir(), "fsconf_cache")
+	dir := filepath.Join(fsenv.TempDir(), "fsconf_cache")
 	return &xcache.FileCache{
 		Dir: dir,
 	}

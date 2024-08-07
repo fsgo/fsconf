@@ -30,15 +30,36 @@ func Parse(confName string, obj any) (err error) {
 	return Default().Parse(confName, obj)
 }
 
+// MustParse 调用 Parse，若返回 err!=ni 则 panic
+func MustParse(confName string, obj any) {
+	if err := Parse(confName, obj); err != nil {
+		panic(err)
+	}
+}
+
 // ParseByAbsPath 解析绝对路径的配置
 func ParseByAbsPath(confAbsPath string, obj any) (err error) {
 	return Default().ParseByAbsPath(confAbsPath, obj)
+}
+
+// MustParseByAbsPath 调用 ParseByAbsPath，若返回 err!=ni 则 panic
+func MustParseByAbsPath(confAbsPath string, obj any) {
+	if err := ParseByAbsPath(confAbsPath, obj); err != nil {
+		panic(err)
+	}
 }
 
 // ParseBytes （全局）解析 bytes
 // fileExt 是文件后缀，如.json、.toml
 func ParseBytes(fileExt string, content []byte, obj any) error {
 	return Default().ParseBytes(fileExt, content, obj)
+}
+
+// MustParseBytes 调用 ParseBytes，若返回 err!=ni 则 panic
+func MustParseBytes(fileExt string, content []byte, obj any) {
+	if err := ParseBytes(fileExt, content, obj); err != nil {
+		panic(err)
+	}
 }
 
 // Exists  （全局）判断是否存在
@@ -48,13 +69,20 @@ func Exists(confName string) bool {
 
 // RegisterParser （全局）注册一个解析器
 // fileExt 是文件后缀，如 .json
-func RegisterParser(fileExt string, fn ParserFn) error {
+func RegisterParser(fileExt string, fn DecoderFunc) error {
 	err := Default().RegisterParser(fileExt, fn)
 	if err != nil {
 		return err
 	}
 	defaultParsers = append(defaultParsers, parserNameFn{Name: fileExt, Fn: fn})
 	return nil
+}
+
+// MustRegisterParser 调用 RegisterParser，若返回的 err!=nil 则 panic
+func MustRegisterParser(fileExt string, fn DecoderFunc) {
+	if err := RegisterParser(fileExt, fn); err != nil {
+		panic(err)
+	}
 }
 
 // RegisterHook （全局）注册一个辅助类

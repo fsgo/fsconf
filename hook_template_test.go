@@ -116,12 +116,14 @@ func Test_fnFetch(t *testing.T) {
 	api := ts.URL
 	t.Run("server ok", func(t *testing.T) {
 		txt := `# hook.template  Enable=true
-K1="{{ fetch "` + api + `?k=k1" }}"
-K2="{{ fetch "` + api + `?k=k2" }}"
-K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
+{
+  "K1":"{{ fetch "` + api + `?k=k1" }}",
+  "K2":"{{ fetch "` + api + `?k=k2" }}",
+  "K3":"{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
+}
 `
 		mp := map[string]string{}
-		err1 := ParseBytes(".toml", []byte(txt), &mp)
+		err1 := ParseBytes(".json", []byte(txt), &mp)
 		fst.NoError(t, err1)
 		want1 := map[string]string{
 			"K1": "hello-k1",
@@ -131,13 +133,15 @@ K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
 		fst.Equal(t, want1, mp)
 	})
 
-	t.Run("server unreachable", func(t *testing.T) {
+	t.Run("server unreachable with cache", func(t *testing.T) {
 		ts.Close()
 		txt := `# hook.template  Enable=true
-K3="{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
+{
+  "K3" : "{{ fetch "` + api + `?k=k3" "timeout=5s&cache=1h" }}"
+}
 `
 		mp := map[string]string{}
-		err1 := ParseBytes(".toml", []byte(txt), &mp)
+		err1 := ParseBytes(".json", []byte(txt), &mp)
 		fst.NoError(t, err1)
 		want1 := map[string]string{
 			"K3": "hello-k3",

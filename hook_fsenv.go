@@ -8,6 +8,8 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+
+	"github.com/fsgo/fsenv"
 )
 
 var _ Hook = (*hookFsEnv)(nil)
@@ -38,23 +40,23 @@ func (f *hookFsEnv) Execute(ctx context.Context, p *HookParam) (output []byte, e
 	return contentNew, err
 }
 
-func (f *hookFsEnv) getValue(key string, cf *Configure) (string, error) {
-	ae := cf.AppEnv()
-
+func (f *hookFsEnv) getValue(key string, _ *Configure) (string, error) {
 	var value string
 	switch key {
 	case "RootDir":
-		value = ae.RootDir()
+		value = fsenv.RootDir()
 	case "IDC":
-		value = ae.IDC()
-	case "DataRootDir":
-		value = ae.DataRootDir()
-	case "ConfRootDir":
-		value = ae.ConfRootDir()
-	case "LogRootDir":
-		value = ae.LogRootDir()
+		value = fsenv.IDC()
+	case "DataDir":
+		value = fsenv.DataDir()
+	case "ConfDir":
+		value = fsenv.ConfDir()
+	case "TempDir":
+		value = fsenv.TempDir()
+	case "LogDir":
+		value = fsenv.LogDir()
 	case "RunMode":
-		value = string(ae.RunMode())
+		value = fsenv.RunMode().String()
 	default:
 		return "", fmt.Errorf("key=%q not support", key)
 	}
