@@ -63,6 +63,9 @@ func MustParseBytes(fileExt string, content []byte, obj any) {
 }
 
 // Exists  （全局）判断是否存在
+//
+//	confName 的文件后缀是可选的，当查找文件不存在时，会添加上支持的后缀依次去判断。
+//	如 Exists("app.toml") 会去 {ConfDir}/app.toml 判断
 func Exists(confName string) bool {
 	return Default().Exists(confName)
 }

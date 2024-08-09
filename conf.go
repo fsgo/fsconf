@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/fsgo/fsenv"
@@ -103,7 +104,7 @@ func (c *Configure) realConfPath(confPath string) (path string, ext string, err 
 	isDir := err1 == nil && info.IsDir()
 
 	// fileExt == "" 是为了兼容存在同名目录的情况
-	if (notExist || isDir || fileExt == "") && !inSlice(c.parseNames, fileExt) {
+	if (notExist || isDir || fileExt == "") && !slices.Contains(c.parseNames, fileExt) {
 		for i := 0; i < len(c.parseNames); i++ {
 			ext2 := c.parseNames[i]
 			name2 := confPath + ext2
