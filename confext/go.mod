@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/BurntSushi/toml v1.4.0
-	github.com/fsgo/fsconf v0.3.3-0.20240807095237-00cb160e8508
+	github.com/fsgo/fsconf v0.4.0
 	github.com/fsgo/fst v0.0.4
 	github.com/go-playground/validator/v10 v10.22.0
 	gopkg.in/yaml.v3 v3.0.1

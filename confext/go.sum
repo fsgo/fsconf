@@ -2,8 +2,8 @@ github.com/BurntSushi/toml v1.4.0 h1:kuoIxZQy2WRRk1pttg9asf+WVv6tWQuBNVmK8+nqPr0
 github.com/BurntSushi/toml v1.4.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fsgo/fsconf v0.3.3-0.20240807095237-00cb160e8508 h1:SbjHIrCs39bXhwYR+e58B+IfmjAf1aq7FYyG8fn+hkg=
-github.com/fsgo/fsconf v0.3.3-0.20240807095237-00cb160e8508/go.mod h1:FndDJ/1zUT5BCuRoWvDUjDVt/G0RAUSolEdIQUkR9C0=
+github.com/fsgo/fsconf v0.4.0 h1:nd5QH82D0Sm6R7FL9Eto9sTj65+JrfAFOQOWEO1ut6M=
+github.com/fsgo/fsconf v0.4.0/go.mod h1:FndDJ/1zUT5BCuRoWvDUjDVt/G0RAUSolEdIQUkR9C0=
 github.com/fsgo/fsenv v0.6.0 h1:eKszUbgO01F3vHWqpJ8wWTKEookPjC3n+2qlYLsfdGs=
 github.com/fsgo/fsenv v0.6.0/go.mod h1:71asOCXbCIANbsrlVXoWlpXGb1aHYVhmN2KWNMvuqbk=
 github.com/fsgo/fst v0.0.4 h1:d3LgjVxsb+Y2isbe7Erq8ZAp1p6qQpVVovazSDCOMpo=
