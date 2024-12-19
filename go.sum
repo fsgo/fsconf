@@ -1,4 +1,4 @@
 github.com/fsgo/fsenv v0.6.0 h1:eKszUbgO01F3vHWqpJ8wWTKEookPjC3n+2qlYLsfdGs=
 github.com/fsgo/fsenv v0.6.0/go.mod h1:71asOCXbCIANbsrlVXoWlpXGb1aHYVhmN2KWNMvuqbk=
-github.com/fsgo/fst v0.0.4 h1:d3LgjVxsb+Y2isbe7Erq8ZAp1p6qQpVVovazSDCOMpo=
-github.com/fsgo/fst v0.0.4/go.mod h1:vNB0la0LICDwsMuwD7KR8NNDnslYyH/1x1+fOamXra8=
+github.com/fsgo/fst v0.0.5 h1:c12J39shorNiS3X9QsK6sg/KUzw8FOA3IoKPb/upj7E=
+github.com/fsgo/fst v0.0.5/go.mod h1:vNB0la0LICDwsMuwD7KR8NNDnslYyH/1x1+fOamXra8=
